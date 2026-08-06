@@ -4,13 +4,18 @@
 // ============================================
 import { NextRequest, NextResponse } from 'next/server';
 import { createEmbedding } from '@/lib/openai';
-import { supabaseAdmin } from '@/lib/supabase';
+import { getSupabaseAdmin } from '@/lib/supabase';
 
 export async function POST(req: NextRequest) {
   // 보안: 서비스 롤 키 검증
   const authHeader = req.headers.get('authorization');
   if (authHeader !== `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`) {
     return NextResponse.json({ error: '인증 실패' }, { status: 401 });
+  }
+
+  const supabaseAdmin = getSupabaseAdmin();
+  if (!supabaseAdmin) {
+    return NextResponse.json({ error: 'Supabase가 설정되지 않았습니다.' }, { status: 400 });
   }
 
   try {
