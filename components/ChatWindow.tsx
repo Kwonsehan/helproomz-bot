@@ -2,8 +2,8 @@
 // ============================================
 // components/ChatWindow.tsx
 // 메인 채팅창 컴포넌트
-// - 청춘포털 질문 검증 교정 (공유오피스 ➔ 커뮤니티 공간 안내)
-// - 질문 선택 및 답변 카드 클릭 시 해당 공간 공식 홈페이지 URL 100% 이동 연동
+// - 맞춤 설정 안함 ➔ '💡 추천 정책 TOP 2' (질문 분야 연관 무작위)
+// - 맞춤 설정 함 ➔ '💡 맞춤 추천 정책 TOP 2' (맞춤 조건 반영)
 // ============================================
 
 import { useState, useRef, useEffect, useCallback } from 'react';
@@ -163,6 +163,7 @@ export default function ChatWindow() {
       const reader = response.body!.getReader();
       const decoder = new TextDecoder();
       let relatedPolicies: Policy[] = [];
+      let isCustomFiltered = false;
 
       while (true) {
         const { value, done } = await reader.read();
@@ -180,6 +181,7 @@ export default function ChatWindow() {
 
             if (parsed.type === 'policies') {
               relatedPolicies = parsed.policies;
+              isCustomFiltered = Boolean(parsed.isCustomFiltered);
             } else if (parsed.type === 'text') {
               setMessages(prev =>
                 prev.map(m =>
@@ -198,7 +200,12 @@ export default function ChatWindow() {
       setMessages(prev =>
         prev.map(m =>
           m.id === assistantId
-            ? { ...m, isStreaming: false, policies: relatedPolicies }
+            ? {
+                ...m,
+                isStreaming: false,
+                policies: relatedPolicies,
+                isCustomFiltered: isCustomFiltered,
+              }
             : m
         )
       );
