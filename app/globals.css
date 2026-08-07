@@ -427,7 +427,7 @@ html, body {
 }
 
 /* ============================================
-   [신규] AI 로딩 표시 (바운싱 점 ● ● ● 애니메이션)
+   AI 로딩 표시 (바운싱 점 ● ● ● 애니메이션)
    ============================================ */
 .ai-loading-container {
   display: flex;
@@ -582,7 +582,7 @@ html, body {
 }
 
 /* ============================================
-   추천 질문 3개 + 접기/펼치기 및 새로고침 탭
+   [신규] 분야별 2단계 추천 질문 탭 스타일
    ============================================ */
 .suggestions {
   padding: 12px 24px;
@@ -641,6 +641,50 @@ html, body {
   color: #ffffff;
 }
 
+.suggestions-content {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* 1단계: 분야 카테고리 탭 바 */
+.category-tab-bar {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.category-tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  background: #ffffff;
+  border: 1px solid var(--border);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.category-tab-btn:hover {
+  border-color: var(--chungchun-blue);
+  color: var(--chungchun-blue);
+}
+
+.active-cat-tab {
+  background: var(--chungchun-blue) !important;
+  color: var(--chungchun-yellow) !important;
+  border-color: var(--chungchun-blue) !important;
+  font-weight: 800 !important;
+  box-shadow: 0 2px 6px rgba(27, 42, 128, 0.15);
+}
+
+/* 2단계: 세부 질문 3개 그리드 */
 .suggestions-grid-3 {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
