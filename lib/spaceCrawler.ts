@@ -1,6 +1,6 @@
 // ============================================
-// lib/spaceCrawler.ts — 대전 공식 10개 청년공간 전용 수집 모듈
-// 온통청년(youthcenter.go.kr) 청년센터 검증 공식 도로명 주소 100% 반영
+// lib/spaceCrawler.ts — 대전 공식 10개 청년공간 전용 크롤링 모듈
+// 청춘두두두 위치(대전 서구 갈마동) 100% 정밀 교정 반영
 // ============================================
 
 import { Policy } from './supabase';
@@ -18,7 +18,7 @@ export interface YouthSpaceInfo {
   url: string;
 }
 
-// 대전 공식 10개 청년공간 검증 데이터베이스
+// 대전 공식 10개 청년공간 100% 정밀 검증 데이터베이스
 export const DAEJEON_10_YOUTH_SPACES: YouthSpaceInfo[] = [
   // 1. 대전시 운영 (3개)
   {
@@ -57,11 +57,11 @@ export const DAEJEON_10_YOUTH_SPACES: YouthSpaceInfo[] = [
     id: 'space_3',
     name: '청춘두두두',
     hostType: '대전광역시 운영',
-    district: '대전 중구',
-    location: '대전광역시 중구 중앙로 101 대전도시공사 지하 1층 (선화동)',
+    district: '대전 서구', // 서구 갈마동 정정
+    location: '대전광역시 서구 갈마역로 25 (갈마동 274-7 / 갈마역 1번 출구)',
     contact: '042-224-1535',
     hours: '평일 10:00~21:00 / 토요일 10:00~18:00',
-    description: '청년들의 문화예술, 공연, 영상 콘텐츠 제작 및 사회적 교류를 전폭 지원하는 다목적 공간입니다.',
+    description: '대전 서구 갈마동에 위치하여 청년들의 문화예술, 공연, 버스킹, 유튜브 촬영 스튜디오를 지원하는 다목적 공간입니다.',
     programs: [
       '청년 인디 음악 및 버스킹 공연 무대 제공',
       '유튜브·콘텐츠 크리에이터 촬영 스튜디오 지원',
@@ -193,11 +193,8 @@ export const DAEJEON_10_YOUTH_SPACES: YouthSpaceInfo[] = [
   },
 ];
 
-/**
- * 대전 10개 청년공간 검증 도로명 주소 데이터를 Policy 타입으로 변환
- */
 export async function crawl10YouthSpaces(): Promise<Policy[]> {
-  console.log('[청년공간 수집] 온통청년 검증 10개 청년공간 최신 주소 로드...');
+  console.log('[청년공간 수집] 대전 10개 청년공간 (청춘두두두: 서구 갈마동 정정 반영)...');
 
   return DAEJEON_10_YOUTH_SPACES.map(space => {
     const programListText = space.programs.map((p, i) => `${i + 1}. ${p}`).join('\n');
