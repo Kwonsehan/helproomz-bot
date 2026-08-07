@@ -2,9 +2,7 @@
 // ============================================
 // components/ChatWindow.tsx
 // 메인 채팅창 컴포넌트
-// - 헤더: 청춘스럽 실물 로고 + '청춘스럽 정책안내 AI봇'
-// - 분야별 2단계 추천 질문 탭 (정밀 교정된 32개 정식 질문 풀)
-// - 추천 질문 탭 열고 닫기(토글) 및 🔄 새로고침 기능
+// - 대전 공식 10개 청년공간 100% 정밀 검증 질문 반영 (청춘다락 제거 ➔ 청춘두두두 교정)
 // ============================================
 
 import { useState, useRef, useEffect, useCallback } from 'react';
@@ -28,7 +26,7 @@ export const CATEGORY_TABS: CategoryTabInfo[] = [
   { id: '청년공간', label: '대전 청년공간', icon: '🏛️' },
 ];
 
-// 전수 조사를 통해 100% 정밀 교정된 32개 추천 질문 데이터베이스
+// 대전 공식 10개 청년공간 100% 정밀 검증 32개 추천 질문 데이터베이스
 export const CATEGORY_QUESTION_POOLS: Record<CategoryTab, string[]> = {
   '일자리': [
     '취업관련 홈페이지 알려줘',
@@ -66,9 +64,9 @@ export const CATEGORY_QUESTION_POOLS: Record<CategoryTab, string[]> = {
     '대전역 지하상가 청춘나들목 이용 방법',
     '대덕구 청년벙커 밴드연습실/요가 교실 신청',
     '둔산동 청춘너나들이 동아리 스터디룸 예약',
-    '대흥동 청춘다락 청년 예술 지원 안내',
+    '중구 청춘두두두 문화예술 및 스튜디오 예약',
     '유성구청년지원센터 및 궁동 창업클러스터',
-    '동구동락 / 중구 청년모아 위치 및 혜택',
+    '동구동락 / 중구 청년모아 / 서구 청춘포털 위치',
   ],
 };
 
@@ -281,7 +279,7 @@ export default function ChatWindow() {
         <div ref={bottomRef} />
       </main>
 
-      {/* ========== 정밀 교정된 분야별 2단계 추천 질문 탭 ========== */}
+      {/* ========== 공식 10개 청년공간 100% 정밀 검증 2단계 추천 질문 탭 ========== */}
       <div className="suggestions">
         <div className="suggestions-header">
           <button
