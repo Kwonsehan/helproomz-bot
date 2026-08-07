@@ -2,12 +2,13 @@
 // ============================================
 // components/ChatWindow.tsx
 // 메인 채팅창 컴포넌트
-// - 맞춤 상황 체크 필터 연동
-// - 3개 추천 질문 + 🔄 새로고침 (랜덤 바뀜) 기능
+// - 헤더: 청춘스럽 실물 로고 이미지 + '청춘스럽 정책안내 AI봇'
+// - 추천 질문 탭 열고 닫기(토글) 기능
 // ============================================
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
+import Image from 'next/image';
 import MessageBubble, { Message } from './MessageBubble';
 import PolicyFilter, { UserSituationFilter } from './PolicyFilter';
 import { Policy } from '@/lib/supabase';
@@ -53,7 +54,7 @@ export default function ChatWindow() {
     {
       id: uuidv4(),
       role: 'assistant',
-      content: `안녕하세요! 👋 **대전 서구 청년공간 청춘스럽** 청년정책 AI 안내봇입니다.\n\n청춘스럽은 대전 청년들의 자유로운 활동을 다양하게 지원하는 복합문화 공간입니다.\n\n상단 **[📋 내 맞춤 상황 체크]**를 설정하시면 본인의 연령·소득·취업상태에 꼭 맞는 최고의 정책을 찾아드립니다! 궁금한 점을 편하게 물어보세요. 😊`,
+      content: `안녕하세요! 👋 **청춘스럽 정책안내 AI봇**입니다.\n\n대전 청년들을 위해 일자리, 주거, 교육, 창업, 복지, 금융 정책 정보를 정확하고 친절하게 안내해 드려요.\n\n상단 **[📋 내 맞춤 상황 체크]**를 설정하시면 연령·소득·취업상태에 딱 맞는 맞춤 정책을 찾아드립니다! 궁금한 점을 편하게 물어보세요. 😊`,
     },
   ]);
 
@@ -67,6 +68,8 @@ export default function ChatWindow() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   // 3개 랜덤 추천 질문 상태
   const [suggestedQuestions, setSuggestedQuestions] = useState<string[]>([]);
+  // 추천 질문 탭 열림/닫힘(접기) 상태 (기본값: 열림)
+  const [isSuggestionsOpen, setIsSuggestionsOpen] = useState(true);
   // 세션 ID
   const [sessionId] = useState(() => uuidv4());
 
@@ -89,7 +92,7 @@ export default function ChatWindow() {
   }, [messages]);
 
   // ==========================================
-  // 메시지 전송 핸들러 (맞춤 필터 정보 함께 전달)
+  // 메시지 전송 핸들러
   // ==========================================
   const sendMessage = useCallback(async (text: string) => {
     if (!text.trim() || isLoading) return;
@@ -114,7 +117,6 @@ export default function ChatWindow() {
     setMessages(prev => [...prev, assistantMessage]);
 
     try {
-      // API 호출 (상세 맞춤 필터 포함)
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -124,7 +126,7 @@ export default function ChatWindow() {
             { role: 'user', content: text.trim() },
           ],
           sessionId,
-          filter, // 맞춤 상황 체크 필터 전달
+          filter,
         }),
       });
 
@@ -205,14 +207,18 @@ export default function ChatWindow() {
 
   return (
     <div className="chat-container">
-      {/* ========== 헤더 ========== */}
+      {/* ========== 헤더 (실물 로고 이미지 + 청춘스럽 정책안내 AI봇) ========== */}
       <header className="chat-header">
         <div className="header-left">
           <div className="header-title-group">
-            <h1 className="header-main-text">대전 서구 청년공간</h1>
-            <div className="chungchun-pill-badge">
-              <span>청춘스럽</span>
+            <div className="header-logo-container">
+              <img
+                src="/logo.png"
+                alt="청춘스럽 로고"
+                className="header-logo-img"
+              />
             </div>
+            <h1 className="header-main-text">청춘스럽 정책안내 AI봇</h1>
           </div>
         </div>
         <button
@@ -222,22 +228,6 @@ export default function ChatWindow() {
           📋 내 맞춤 상황 체크 {isFilterOpen ? '닫기' : '설정'}
         </button>
       </header>
-
-      {/* ========== 공간 안내 정보 바 ========== */}
-      <div className="space-info-bar">
-        <div className="space-info-item">
-          <span className="space-info-icon">📍</span>
-          <span><strong>장소:</strong> 대전광역시 서구 계룡로 314 대전일보사 1층</span>
-        </div>
-        <div className="space-info-item">
-          <span className="space-info-icon">⏰</span>
-          <span><strong>시간:</strong> 평일 11:00-21:00 / 토 11:00-19:00</span>
-        </div>
-        <div className="space-info-item">
-          <span className="space-info-icon">💛</span>
-          <span><strong>문의:</strong> 042.523.7736</span>
-        </div>
-      </div>
 
       {/* ========== 맞춤 상황 체크 필터 패널 ========== */}
       {isFilterOpen && (
@@ -250,7 +240,7 @@ export default function ChatWindow() {
         </div>
       )}
 
-      {/* ========== 메시지 영역 ========== */}
+      {/* ========== 메시지 대화 영역 ========== */}
       <main className="messages-area">
         {messages.map(message => (
           <MessageBubble key={message.id} message={message} />
@@ -258,33 +248,47 @@ export default function ChatWindow() {
         <div ref={bottomRef} />
       </main>
 
-      {/* ========== 추천 질문 3개 + 새로고침 탭 (요구사항 3 반영) ========== */}
+      {/* ========== 추천 질문 3개 + 접기/펼치기 및 새로고침 탭 ========== */}
       <div className="suggestions">
         <div className="suggestions-header">
-          <span className="suggestions-label">💬 이런 것들을 물어볼 수 있어요</span>
           <button
             type="button"
-            className="refresh-btn"
-            onClick={handleRefreshQuestions}
-            title="새로운 질문 추천받기"
+            className="suggestions-toggle-btn"
+            onClick={() => setIsSuggestionsOpen(!isSuggestionsOpen)}
           >
-            🔄 새로고침
+            <span className="suggestions-label">💬 이런 것들을 물어볼 수 있어요</span>
+            <span className="toggle-icon">{isSuggestionsOpen ? '▲ 접기' : '▼ 펼치기'}</span>
           </button>
-        </div>
-        <div className="suggestions-grid-3">
-          {suggestedQuestions.map((q) => (
+
+          {isSuggestionsOpen && (
             <button
-              key={q}
-              className="suggestion-chip"
-              onClick={() => sendMessage(q)}
+              type="button"
+              className="refresh-btn"
+              onClick={handleRefreshQuestions}
+              title="새로운 질문 추천받기"
             >
-              {q}
+              🔄 새로고침
             </button>
-          ))}
+          )}
         </div>
+
+        {/* 접기/펼치기 애니메이션 토글 */}
+        {isSuggestionsOpen && (
+          <div className="suggestions-grid-3">
+            {suggestedQuestions.map((q) => (
+              <button
+                key={q}
+                className="suggestion-chip"
+                onClick={() => sendMessage(q)}
+              >
+                {q}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* ========== 입력창 ========== */}
+      {/* ========== 입력창 영역 ========== */}
       <footer className="input-area">
         <div className="input-wrapper">
           <textarea

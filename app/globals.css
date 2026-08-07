@@ -1,11 +1,6 @@
 /* ============================================
    globals.css — 청년정책 AI봇 전체 스타일
-   '대전서구 청년공간 청춘스럽' 실물 웹사이트 감성 적용 (화사한 라이트 테마)
-   - 메인 배경: 맑고 깨끗한 파스텔 소라/스카이 블루 (#EFF4FA)
-   - 포인트 딥블루: C100 M95 Y5 K0 (#1B2A80) - 알약형 뱃지 및 핵심 강조
-   - 서브 옐로우: C6 M26 Y98 K0 (#F5B800) - 청춘스럽 뱃지 글씨 및 혜택 강조
-   - 서브 오렌지: C0 M80 Y95 K0 (#F04E23) - 아이콘 및 사용자 말풍선 포인트
-   - 카드/채팅창: 퓨어 화이트 (#FFFFFF) & 부드러운 그린/블루 섀도우
+   '대전서구 청년공간 청춘스럽' 브랜드 디자인
    ============================================ */
 
 /* ===== 기본 초기화 ===== */
@@ -16,14 +11,14 @@
 }
 
 :root {
-  /* ===== [청춘스럽 공식 브랜드 컬러 시스템] ===== */
-  --chungchun-blue:        #1B2A80;  /* C100 M95 Y5 K0 — 딥 블루 알약 뱃지 */
-  --chungchun-blue-light:  #2B3EA6;  /* 인터랙션용 맑은 블루 */
-  --chungchun-yellow:      #F5B800;  /* C6 M26 Y98 K0 — 청춘스럽 옐로우 포인트 */
-  --chungchun-orange:      #F04E23;  /* C0 M80 Y95 K0 — 활기찬 오렌지 하트 */
-  --chungchun-dark-gray:   #22252A;  /* C0 M0 Y0 K80 — 깔끔한 가독성 차콜 */
+  /* ===== 청춘스럽 공식 브랜드 컬러 시스템 ===== */
+  --chungchun-blue:        #1B2A80;  /* C100 M95 Y5 K0 — 딥 블루 */
+  --chungchun-blue-light:  #2B3EA6;
+  --chungchun-yellow:      #F5B800;  /* C6 M26 Y98 K0 — 옐로우 포인트 */
+  --chungchun-orange:      #F04E23;  /* C0 M80 Y95 K0 — 오렌지 */
+  --chungchun-dark-gray:   #22252A;
 
-  /* ===== 라이트 테마 디자인 토큰 ===== */
+  /* ===== 디자인 토큰 ===== */
   --primary:        var(--chungchun-blue);
   --primary-light:  #3D52D5;
   --primary-dark:   #121C59;
@@ -31,16 +26,16 @@
   --accent-light:   #FFF3C4;
   --accent-orange:  var(--chungchun-orange);
 
-  --bg-page:        #EFF4FA;  /* 이미지 속 실물 대전서구 청춘스럽 파스텔 소라색 배경 */
-  --bg-card:        #FFFFFF;  /* 퓨어 화이트 카드 */
-  --bg-elevated:    #F7FAFE;  /* 입력창 및 호버 배경 */
-  --bg-input:       #F0F4FA;  /* 입력 텍스트 영역 */
+  --bg-page:        #EFF4FA;  /* 파스텔 소라색 배경 */
+  --bg-card:        #FFFFFF;
+  --bg-elevated:    #F7FAFE;
+  --bg-input:       #F0F4FA;
 
-  --text-primary:   #1E2538;  /* 선명하고 가독성 좋은 딥 차콜 */
-  --text-secondary: #586788;  /* 부드러운 네이비 그레이 보조 텍스트 */
-  --text-muted:     #8C9BAE;  /* 희미한 텍스트 */
+  --text-primary:   #1E2538;
+  --text-secondary: #586788;
+  --text-muted:     #8C9BAE;
 
-  --border:         #DCE4F0;  /* 부드러운 연블루 테두리 */
+  --border:         #DCE4F0;
   --border-hover:   #1B2A80;
 
   --user-bubble:    linear-gradient(135deg, #1B2A80, #2B3EA6);
@@ -89,6 +84,7 @@ html, body {
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  padding: 16px;
   background: radial-gradient(circle at 50% 0%, #FFFFFF 0%, #EFF4FA 70%);
 }
 
@@ -118,14 +114,14 @@ html, body {
 }
 
 /* ============================================
-   메인 채팅 프레임 컨테이너
+   메인 채팅 프레임 컨테이너 (잘림 방지)
    ============================================ */
 .chat-container {
   position: relative;
   z-index: 1;
   width: 100%;
-  max-width: 900px;
-  height: 94vh;
+  max-width: 950px;
+  height: 96vh;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
@@ -137,15 +133,16 @@ html, body {
 }
 
 /* ============================================
-   헤더 (실물 청춘스럽 디자인)
+   헤더 (청춘스럽 실물 로고 + 청춘스럽 정책안내 AI봇)
    ============================================ */
 .chat-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 24px;
+  padding: 14px 24px;
   background: #ffffff;
   border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
 }
 
 .header-left {
@@ -157,7 +154,26 @@ html, body {
 .header-title-group {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+}
+
+.header-logo-container {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #FFFFFF;
+  border-radius: var(--radius-md);
+  box-shadow: 0 2px 8px rgba(27, 42, 128, 0.08);
+  padding: 3px;
+  border: 1px solid var(--border);
+}
+
+.header-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 .header-main-text {
@@ -165,17 +181,6 @@ html, body {
   font-weight: 800;
   color: var(--chungchun-blue);
   letter-spacing: -0.5px;
-}
-
-/* 청춘스럽 브랜드 알약 뱃지 */
-.chungchun-pill-badge {
-  background: var(--chungchun-blue);
-  color: var(--chungchun-yellow);
-  font-weight: 800;
-  font-size: 13px;
-  padding: 4px 14px;
-  border-radius: var(--radius-pill);
-  box-shadow: 0 2px 6px rgba(27, 42, 128, 0.2);
 }
 
 .filter-toggle {
@@ -200,36 +205,15 @@ html, body {
 }
 
 /* ============================================
-   공간 안내 정보 바
-   ============================================ */
-.space-info-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: #F8FAFD;
-  padding: 8px 24px;
-  border-bottom: 1px dashed var(--border);
-  font-size: 12.5px;
-  color: var(--text-secondary);
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.space-info-item {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-/* ============================================
-   [신규] 맞춤 상황 체크 필터 (사진 양식 반영)
+   맞춤 상황 체크 필터
    ============================================ */
 .filter-panel {
   padding: 18px 24px;
   background: #F4F7FB;
   border-bottom: 1px solid var(--border);
-  max-height: 50vh;
+  max-height: 45vh;
   overflow-y: auto;
+  flex-shrink: 0;
 }
 
 .situation-filter-box {
@@ -354,20 +338,21 @@ html, body {
 }
 
 /* ============================================
-   메시지 영역
+   메시지 대화 영역 (시원하게 잘림 없이 표시)
    ============================================ */
 .messages-area {
   flex: 1;
+  min-height: 0; /* flex 자식 스크롤 정상화 필수 */
   overflow-y: auto;
-  padding: 20px 24px;
+  padding: 24px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
 }
 
 .message-wrapper {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   align-items: flex-start;
 }
 
@@ -376,8 +361,8 @@ html, body {
 }
 
 .avatar {
-  width: 38px;
-  height: 38px;
+  width: 40px;
+  height: 40px;
   border-radius: var(--radius-pill);
   background: var(--chungchun-blue);
   color: #ffffff;
@@ -394,18 +379,27 @@ html, body {
 }
 
 .message-content-area {
-  max-width: 80%;
+  max-width: 85%;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .bubble {
-  padding: 14px 18px;
+  padding: 16px 20px;
   border-radius: var(--radius-lg);
-  font-size: 14.5px;
-  line-height: 1.65;
+  font-size: 15px;
+  line-height: 1.7;
   word-break: break-word;
+}
+
+.bubble h1, .bubble h2, .bubble h3, .bubble h4 {
+  margin-top: 10px;
+  margin-bottom: 6px;
+  color: var(--chungchun-blue);
+}
+.bubble h3 {
+  font-size: 16px;
 }
 
 .bubble-user {
@@ -445,32 +439,38 @@ html, body {
 }
 
 /* ============================================
-   추천 정책 카드가 메시지 하단에 표시 (상위 2개)
+   추천 정책 카드 TOP 2 (시원하게 한눈에 노출)
    ============================================ */
 .related-policies {
-  margin-top: 8px;
+  margin-top: 6px;
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
 .related-title {
-  font-size: 13px;
-  font-weight: 700;
+  font-size: 13.5px;
+  font-weight: 800;
   color: var(--chungchun-blue);
 }
 
 .policy-cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+@media (max-width: 640px) {
+  .policy-cards-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .policy-card {
   background: #ffffff;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  padding: 14px;
+  padding: 16px;
   box-shadow: var(--shadow-sm);
   display: flex;
   flex-direction: column;
@@ -485,7 +485,7 @@ html, body {
 .badge {
   font-size: 11px;
   font-weight: 700;
-  padding: 2px 8px;
+  padding: 3px 9px;
   border-radius: var(--radius-pill);
 }
 
@@ -500,13 +500,13 @@ html, body {
 }
 
 .card-title {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 800;
   color: var(--chungchun-blue);
 }
 
 .card-content {
-  font-size: 12.5px;
+  font-size: 13px;
   color: var(--text-secondary);
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -518,10 +518,10 @@ html, body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 4px;
-  padding-top: 6px;
+  margin-top: 6px;
+  padding-top: 8px;
   border-top: 1px dashed var(--border);
-  font-size: 11.5px;
+  font-size: 12px;
   color: var(--text-muted);
 }
 
@@ -532,7 +532,7 @@ html, body {
 }
 
 /* ============================================
-   [신규] 추천 질문 3개 + 새로고침 탭 (요구사항 3 반영)
+   추천 질문 3개 + 접기/펼치기 및 새로고침 탭
    ============================================ */
 .suggestions {
   padding: 12px 24px;
@@ -540,7 +540,8 @@ html, body {
   border-top: 1px solid var(--border);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
+  flex-shrink: 0;
 }
 
 .suggestions-header {
@@ -549,17 +550,35 @@ html, body {
   align-items: center;
 }
 
+.suggestions-toggle-btn {
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
 .suggestions-label {
-  font-size: 13px;
+  font-size: 13.5px;
   font-weight: 700;
   color: var(--chungchun-blue);
+}
+
+.toggle-icon {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  background: #EAF0F8;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
 }
 
 .refresh-btn {
   background: #ffffff;
   border: 1px solid var(--border);
   border-radius: var(--radius-pill);
-  padding: 3px 10px;
+  padding: 4px 12px;
   font-size: 12px;
   color: var(--chungchun-blue);
   font-weight: 700;
@@ -575,7 +594,7 @@ html, body {
 .suggestions-grid-3 {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+  gap: 10px;
 }
 
 @media (max-width: 640px) {
@@ -585,11 +604,11 @@ html, body {
 }
 
 .suggestion-chip {
-  padding: 8px 12px;
+  padding: 9px 14px;
   background: #ffffff;
   border: 1px solid var(--border);
   border-radius: var(--radius-pill);
-  font-size: 12.5px;
+  font-size: 13px;
   color: var(--text-primary);
   text-align: center;
   cursor: pointer;
@@ -597,6 +616,7 @@ html, body {
   overflow: hidden;
   text-overflow: ellipsis;
   transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.03);
 }
 
 .suggestion-chip:hover {
@@ -616,6 +636,7 @@ html, body {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  flex-shrink: 0;
 }
 
 .input-wrapper {
@@ -623,7 +644,7 @@ html, body {
   align-items: center;
   gap: 10px;
   background: var(--bg-input);
-  padding: 6px 12px;
+  padding: 8px 14px;
   border-radius: var(--radius-pill);
   border: 1px solid var(--border);
 }
@@ -634,7 +655,7 @@ html, body {
   border: none;
   outline: none;
   resize: none;
-  font-size: 14px;
+  font-size: 14.5px;
   color: var(--text-primary);
   font-family: inherit;
   line-height: 1.5;
@@ -654,6 +675,7 @@ html, body {
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
+  flex-shrink: 0;
 }
 
 .send-btn:disabled {
@@ -663,7 +685,7 @@ html, body {
 }
 
 .input-hint {
-  font-size: 11px;
+  font-size: 11.5px;
   color: var(--text-muted);
   text-align: center;
 }
