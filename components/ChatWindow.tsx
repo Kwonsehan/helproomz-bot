@@ -2,17 +2,18 @@
 // ============================================
 // components/ChatWindow.tsx
 // 메인 채팅창 컴포넌트
-// 사용자 입력 → API 호출 → 스트리밍 응답 표시
+// - 맞춤 상황 체크 필터 연동
+// - 3개 추천 질문 + 🔄 새로고침 (랜덤 바뀜) 기능
 // ============================================
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import MessageBubble, { Message } from './MessageBubble';
-import PolicyFilter from './PolicyFilter';
+import PolicyFilter, { UserSituationFilter } from './PolicyFilter';
 import { Policy } from '@/lib/supabase';
 
-// 추천 질문 목록
-const SUGGESTED_QUESTIONS = [
+// 모든 추천 질문 목록 (풀)
+const ALL_SUGGESTED_QUESTIONS = [
   '취업관련 홈페이지 알려줘',
   '대전 청년 취업 지원 프로그램 알려줘',
   '청년 내일채움공제 어떻게 신청해?',
@@ -20,7 +21,31 @@ const SUGGESTED_QUESTIONS = [
   '청년도약계좌 가입하고 싶어',
   '대전 창업 지원 뭐 있어?',
   '청년 마음건강 상담 지원받고 싶어',
+  '미래두배 청년통장 자격 조건이 뭐야?',
+  '대전 청년 월세 지원 금액이랑 기간 알려줘',
+  '구직청년 무료 면접 정장 대여 어떻게 해?',
+  '청년 주택 임차보증금 이자 지원 사업 안내해줘',
 ];
+
+// 초기 기본 3개 추천 질문 선택
+function getRandomThreeQuestions(): string[] {
+  const shuffled = [...ALL_SUGGESTED_QUESTIONS].sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, 3);
+}
+
+// 초기 맞춤 상황 체크 필터값
+const initialFilter: UserSituationFilter = {
+  region: '선택하세요.',
+  maritalStatus: '선택하세요.',
+  age: '',
+  incomeMin: '',
+  incomeMax: '',
+  education: '제한없음',
+  major: '제한없음',
+  employmentStatus: '제한없음',
+  specialty: '제한없음',
+  category: '전체',
+};
 
 export default function ChatWindow() {
   // 대화 메시지 목록
@@ -28,7 +53,7 @@ export default function ChatWindow() {
     {
       id: uuidv4(),
       role: 'assistant',
-      content: `안녕하세요! 👋 **대전 서구 청년공간 청춘스럽** 청년정책 AI 안내봇입니다.\n\n청춘스럽은 대전 청년들의 자유로운 활동을 다양하게 지원하는 복합문화 공간입니다.\n\n청년을 위한 일자리, 주거, 교육, 창업, 복지, 금융 정책 정보를 친절히 안내해 드릴게요! 궁금한 것을 편하게 물어보세요. 😊`,
+      content: `안녕하세요! 👋 **대전 서구 청년공간 청춘스럽** 청년정책 AI 안내봇입니다.\n\n청춘스럽은 대전 청년들의 자유로운 활동을 다양하게 지원하는 복합문화 공간입니다.\n\n상단 **[📋 내 맞춤 상황 체크]**를 설정하시면 본인의 연령·소득·취업상태에 꼭 맞는 최고의 정책을 찾아드립니다! 궁금한 점을 편하게 물어보세요. 😊`,
     },
   ]);
 
@@ -36,15 +61,26 @@ export default function ChatWindow() {
   const [input, setInput] = useState('');
   // AI 응답 중 여부
   const [isLoading, setIsLoading] = useState(false);
-  // 필터 상태
-  const [selectedCategory, setSelectedCategory] = useState('전체');
-  const [selectedRegion, setSelectedRegion] = useState('전체');
+  // 맞춤 상황 체크 필터 상태
+  const [filter, setFilter] = useState<UserSituationFilter>(initialFilter);
   // 필터 패널 열림 여부
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  // 세션 ID (대화 로그 구분)
+  // 3개 랜덤 추천 질문 상태
+  const [suggestedQuestions, setSuggestedQuestions] = useState<string[]>([]);
+  // 세션 ID
   const [sessionId] = useState(() => uuidv4());
 
-  // 메시지 목록 자동 스크롤
+  // 마운트 시 3개 질문 랜덤 세팅
+  useEffect(() => {
+    setSuggestedQuestions(getRandomThreeQuestions());
+  }, []);
+
+  // 새로고침 클릭 시 질문 3개 랜덤 변경
+  const handleRefreshQuestions = () => {
+    setSuggestedQuestions(getRandomThreeQuestions());
+  };
+
+  // 스크롤 및 입력창 레프
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -53,7 +89,7 @@ export default function ChatWindow() {
   }, [messages]);
 
   // ==========================================
-  // 메시지 전송 핸들러
+  // 메시지 전송 핸들러 (맞춤 필터 정보 함께 전달)
   // ==========================================
   const sendMessage = useCallback(async (text: string) => {
     if (!text.trim() || isLoading) return;
@@ -64,12 +100,10 @@ export default function ChatWindow() {
       content: text.trim(),
     };
 
-    // 사용자 메시지 추가
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
 
-    // AI 응답 플레이스홀더 추가
     const assistantId = uuidv4();
     const assistantMessage: Message = {
       id: assistantId,
@@ -80,7 +114,7 @@ export default function ChatWindow() {
     setMessages(prev => [...prev, assistantMessage]);
 
     try {
-      // API 호출
+      // API 호출 (상세 맞춤 필터 포함)
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -90,14 +124,12 @@ export default function ChatWindow() {
             { role: 'user', content: text.trim() },
           ],
           sessionId,
-          category: selectedCategory !== '전체' ? selectedCategory : undefined,
-          region: selectedRegion !== '전체' ? selectedRegion : undefined,
+          filter, // 맞춤 상황 체크 필터 전달
         }),
       });
 
       if (!response.ok) throw new Error('API 오류');
 
-      // SSE 스트리밍 읽기
       const reader = response.body!.getReader();
       const decoder = new TextDecoder();
       let relatedPolicies: Policy[] = [];
@@ -117,10 +149,8 @@ export default function ChatWindow() {
             const parsed = JSON.parse(data);
 
             if (parsed.type === 'policies') {
-              // 관련 정책 데이터 수신
               relatedPolicies = parsed.policies;
             } else if (parsed.type === 'text') {
-              // 텍스트 스트리밍 수신
               setMessages(prev =>
                 prev.map(m =>
                   m.id === assistantId
@@ -130,12 +160,11 @@ export default function ChatWindow() {
               );
             }
           } catch {
-            // JSON 파싱 오류 무시
+            // 파싱 에러 무시
           }
         }
       }
 
-      // 스트리밍 완료: 정책 카드 추가, 커서 제거
       setMessages(prev =>
         prev.map(m =>
           m.id === assistantId
@@ -144,7 +173,6 @@ export default function ChatWindow() {
         )
       );
     } catch (error) {
-      // 오류 처리
       setMessages(prev =>
         prev.map(m =>
           m.id === assistantId
@@ -160,9 +188,8 @@ export default function ChatWindow() {
       setIsLoading(false);
       inputRef.current?.focus();
     }
-  }, [messages, sessionId, selectedCategory, selectedRegion, isLoading]);
+  }, [messages, sessionId, filter, isLoading]);
 
-  // 엔터 키 처리 (Shift+Enter = 줄바꿈)
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -170,7 +197,6 @@ export default function ChatWindow() {
     }
   };
 
-  // textarea 높이 자동 조절
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInput(e.target.value);
     e.target.style.height = 'auto';
@@ -179,7 +205,7 @@ export default function ChatWindow() {
 
   return (
     <div className="chat-container">
-      {/* ========== 헤더 (실물 청춘스럽 타이틀 & 알약 뱃지 디자인) ========== */}
+      {/* ========== 헤더 ========== */}
       <header className="chat-header">
         <div className="header-left">
           <div className="header-title-group">
@@ -193,11 +219,11 @@ export default function ChatWindow() {
           className={`filter-toggle ${isFilterOpen ? 'filter-toggle-active' : ''}`}
           onClick={() => setIsFilterOpen(!isFilterOpen)}
         >
-          🔍 정책 필터 {isFilterOpen ? '닫기' : '열기'}
+          📋 내 맞춤 상황 체크 {isFilterOpen ? '닫기' : '설정'}
         </button>
       </header>
 
-      {/* ========== 공간 안내 정보 바 (캡처 이미지 하단 정보 반영) ========== */}
+      {/* ========== 공간 안내 정보 바 ========== */}
       <div className="space-info-bar">
         <div className="space-info-item">
           <span className="space-info-icon">📍</span>
@@ -213,33 +239,14 @@ export default function ChatWindow() {
         </div>
       </div>
 
-
-      {/* ========== 필터 패널 ========== */}
+      {/* ========== 맞춤 상황 체크 필터 패널 ========== */}
       {isFilterOpen && (
         <div className="filter-panel">
           <PolicyFilter
-            selectedCategory={selectedCategory}
-            selectedRegion={selectedRegion}
-            onCategoryChange={setSelectedCategory}
-            onRegionChange={setSelectedRegion}
+            filter={filter}
+            onChangeFilter={setFilter}
+            onResetFilter={() => setFilter(initialFilter)}
           />
-          {(selectedCategory !== '전체' || selectedRegion !== '전체') && (
-            <div className="active-filters">
-              <span className="active-filter-label">적용된 필터:</span>
-              {selectedCategory !== '전체' && (
-                <span className="active-filter-chip">{selectedCategory}</span>
-              )}
-              {selectedRegion !== '전체' && (
-                <span className="active-filter-chip">{selectedRegion}</span>
-              )}
-              <button
-                className="clear-filter"
-                onClick={() => { setSelectedCategory('전체'); setSelectedRegion('전체'); }}
-              >
-                초기화
-              </button>
-            </div>
-          )}
         </div>
       )}
 
@@ -251,23 +258,31 @@ export default function ChatWindow() {
         <div ref={bottomRef} />
       </main>
 
-      {/* ========== 추천 질문 (메시지가 1개일 때만 표시) ========== */}
-      {messages.length === 1 && (
-        <div className="suggestions">
-          <p className="suggestions-label">💬 이런 것들을 물어볼 수 있어요</p>
-          <div className="suggestions-grid">
-            {SUGGESTED_QUESTIONS.map((q) => (
-              <button
-                key={q}
-                className="suggestion-chip"
-                onClick={() => sendMessage(q)}
-              >
-                {q}
-              </button>
-            ))}
-          </div>
+      {/* ========== 추천 질문 3개 + 새로고침 탭 (요구사항 3 반영) ========== */}
+      <div className="suggestions">
+        <div className="suggestions-header">
+          <span className="suggestions-label">💬 이런 것들을 물어볼 수 있어요</span>
+          <button
+            type="button"
+            className="refresh-btn"
+            onClick={handleRefreshQuestions}
+            title="새로운 질문 추천받기"
+          >
+            🔄 새로고침
+          </button>
         </div>
-      )}
+        <div className="suggestions-grid-3">
+          {suggestedQuestions.map((q) => (
+            <button
+              key={q}
+              className="suggestion-chip"
+              onClick={() => sendMessage(q)}
+            >
+              {q}
+            </button>
+          ))}
+        </div>
+      </div>
 
       {/* ========== 입력창 ========== */}
       <footer className="input-area">

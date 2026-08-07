@@ -3,6 +3,7 @@
 // components/MessageBubble.tsx
 // 채팅 말풍선 컴포넌트 (사용자 / AI 구분)
 // - 마크다운 볼드 및 URL 링크 클릭 자동 변환
+// - 답변 하단에 관련 추천 정책 2개 배치
 // ============================================
 
 import { useEffect, useRef } from 'react';
@@ -55,7 +56,6 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
     // 4. 독립적으로 표기된 일반 URL (http:// 또는 https://) 처리 (이미 a태그 내부가 아닌 것)
     const urlRegex = /(?<!href=")(?<!">)(https?:\/\/[^\s<]+)/g;
     formatted = formatted.replace(urlRegex, (url) => {
-      // 이미 a 태그 안에 들어있는 URL인지 간단히 검사
       if (url.includes('class="chat-link"')) return url;
       return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="chat-link">${url}</a>`;
     });
@@ -86,14 +86,14 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
           {message.isStreaming && <span className="cursor">▌</span>}
         </div>
 
-        {/* 관련 정책 카드 (AI 응답에만 표시) */}
+        {/* 관련 추천 정책 2개 노출 (요구사항 2 반영) */}
         {!isUser && message.policies && message.policies.length > 0 && !message.isStreaming && (
           <div className="related-policies">
-            <p className="related-title">💡 관련 정책도 확인해보세요</p>
+            <p className="related-title">💡 맞춤 추천 정책 TOP 2</p>
             <div className="policy-cards-grid">
-              {message.policies.slice(0, 3).map((policy, i) => (
+              {message.policies.slice(0, 2).map((policy, i) => (
                 <PolicyCard key={policy.id} policy={policy} index={i} />
-               ))}
+              ))}
             </div>
           </div>
         )}
