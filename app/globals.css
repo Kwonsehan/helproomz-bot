@@ -88,6 +88,12 @@ html, body {
   background: radial-gradient(circle at 50% 0%, #FFFFFF 0%, #EFF4FA 70%);
 }
 
+@media (max-width: 640px) {
+  .page-wrapper {
+    padding: 0;
+  }
+}
+
 .bg-decoration {
   position: fixed;
   inset: 0;
@@ -132,6 +138,14 @@ html, body {
   overflow: hidden;
 }
 
+@media (max-width: 640px) {
+  .chat-container {
+    height: 100vh;
+    border-radius: 0;
+    border: none;
+  }
+}
+
 /* ============================================
    헤더 (청춘스럽 실물 로고 + 청춘스럽 정책안내 AI봇)
    ============================================ */
@@ -139,27 +153,32 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 24px;
+  padding: 14px 20px;
   background: #ffffff;
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
+  gap: 8px;
 }
 
 .header-left {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
 }
 
 .header-title-group {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
 }
 
 .header-logo-container {
-  width: 44px;
-  height: 44px;
+  width: 42px;
+  height: 42px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -168,6 +187,7 @@ html, body {
   box-shadow: 0 2px 8px rgba(27, 42, 128, 0.08);
   padding: 3px;
   border: 1px solid var(--border);
+  flex-shrink: 0;
 }
 
 .header-logo-img {
@@ -177,17 +197,20 @@ html, body {
 }
 
 .header-main-text {
-  font-size: 20px;
+  font-size: 19px;
   font-weight: 800;
   color: var(--chungchun-blue);
   letter-spacing: -0.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .filter-toggle {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 16px;
+  padding: 8px 14px;
   background: var(--bg-elevated);
   border: 1px solid var(--border);
   border-radius: var(--radius-pill);
@@ -196,12 +219,42 @@ html, body {
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s ease;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .filter-toggle:hover, .filter-toggle-active {
   background: var(--chungchun-blue);
   color: #ffffff;
   border-color: var(--chungchun-blue);
+}
+
+.btn-short-text {
+  display: none;
+}
+
+/* 모바일 전용 반응형 헤더 처리 */
+@media (max-width: 640px) {
+  .chat-header {
+    padding: 10px 14px;
+  }
+  .header-logo-container {
+    width: 36px;
+    height: 36px;
+  }
+  .header-main-text {
+    font-size: 15.5px;
+  }
+  .filter-toggle {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+  .btn-full-text {
+    display: none;
+  }
+  .btn-short-text {
+    display: inline;
+  }
 }
 
 /* ============================================
@@ -214,6 +267,12 @@ html, body {
   max-height: 45vh;
   overflow-y: auto;
   flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .filter-panel {
+    padding: 14px;
+  }
 }
 
 .situation-filter-box {
@@ -266,11 +325,20 @@ html, body {
   align-items: center;
 }
 
+@media (max-width: 640px) {
+  .flex-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+}
+
 .filter-group {
   display: flex;
   align-items: center;
   gap: 10px;
   flex: 1;
+  width: 100%;
 }
 
 .filter-label-text {
@@ -296,6 +364,7 @@ html, body {
   gap: 6px;
   font-size: 13px;
   color: var(--text-secondary);
+  flex-wrap: wrap;
 }
 
 .filter-input-number {
@@ -350,6 +419,13 @@ html, body {
   gap: 20px;
 }
 
+@media (max-width: 640px) {
+  .messages-area {
+    padding: 16px 12px;
+    gap: 14px;
+  }
+}
+
 .message-wrapper {
   display: flex;
   gap: 12px;
@@ -374,6 +450,14 @@ html, body {
   flex-shrink: 0;
 }
 
+@media (max-width: 640px) {
+  .avatar {
+    width: 34px;
+    height: 34px;
+    font-size: 15px;
+  }
+}
+
 .avatar-user {
   background: var(--chungchun-orange);
 }
@@ -385,12 +469,25 @@ html, body {
   gap: 12px;
 }
 
+@media (max-width: 640px) {
+  .message-content-area {
+    max-width: 90%;
+  }
+}
+
 .bubble {
   padding: 16px 20px;
   border-radius: var(--radius-lg);
   font-size: 15px;
   line-height: 1.7;
   word-break: break-word;
+}
+
+@media (max-width: 640px) {
+  .bubble {
+    padding: 12px 14px;
+    font-size: 14px;
+  }
 }
 
 .bubble h1, .bubble h2, .bubble h3, .bubble h4 {
@@ -582,7 +679,7 @@ html, body {
 }
 
 /* ============================================
-   [신규] 분야별 2단계 추천 질문 탭 스타일
+   분야별 2단계 추천 질문 탭
    ============================================ */
 .suggestions {
   padding: 12px 24px;
@@ -592,6 +689,12 @@ html, body {
   flex-direction: column;
   gap: 10px;
   flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .suggestions {
+    padding: 10px 14px;
+  }
 }
 
 .suggestions-header {
@@ -613,6 +716,12 @@ html, body {
   font-size: 13.5px;
   font-weight: 700;
   color: var(--chungchun-blue);
+}
+
+@media (max-width: 640px) {
+  .suggestions-label {
+    font-size: 12.5px;
+  }
 }
 
 .toggle-icon {
@@ -647,7 +756,6 @@ html, body {
   gap: 10px;
 }
 
-/* 1단계: 분야 카테고리 탭 바 */
 .category-tab-bar {
   display: flex;
   gap: 8px;
@@ -684,7 +792,6 @@ html, body {
   box-shadow: 0 2px 6px rgba(27, 42, 128, 0.15);
 }
 
-/* 2단계: 세부 질문 3개 그리드 */
 .suggestions-grid-3 {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -694,6 +801,7 @@ html, body {
 @media (max-width: 640px) {
   .suggestions-grid-3 {
     grid-template-columns: 1fr;
+    gap: 6px;
   }
 }
 
@@ -711,6 +819,13 @@ html, body {
   text-overflow: ellipsis;
   transition: all 0.2s ease;
   box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+}
+
+@media (max-width: 640px) {
+  .suggestion-chip {
+    padding: 7px 12px;
+    font-size: 12px;
+  }
 }
 
 .suggestion-chip:hover {
@@ -731,6 +846,12 @@ html, body {
   flex-direction: column;
   gap: 6px;
   flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .input-area {
+    padding: 10px 14px;
+  }
 }
 
 .input-wrapper {

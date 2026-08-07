@@ -2,9 +2,8 @@
 // ============================================
 // components/ChatWindow.tsx
 // 메인 채팅창 컴포넌트
-// - 헤더: 청춘스럽 실물 로고 + '청춘스럽 정책안내 AI봇'
-// - 분야별 2단계 추천 질문 탭 (4개 분야 x 8개 질문 풀 = 총 32개 질문)
-// - 추천 질문 탭 열고 닫기(토글) 및 🔄 새로고침 기능
+// - 인사말 모바일 깔끔한 줄바꿈 적용
+// - 모바일 헤더 타이틀 및 맞춤 설정 버튼 반응형 최적화
 // ============================================
 
 import { useState, useRef, useEffect, useCallback } from 'react';
@@ -13,7 +12,6 @@ import MessageBubble, { Message } from './MessageBubble';
 import PolicyFilter, { UserSituationFilter } from './PolicyFilter';
 import { Policy } from '@/lib/supabase';
 
-// 분야별 대분류 정의
 export type CategoryTab = '일자리' | '주거금융' | '창업복지' | '청년공간';
 
 export interface CategoryTabInfo {
@@ -29,7 +27,6 @@ export const CATEGORY_TABS: CategoryTabInfo[] = [
   { id: '청년공간', label: '대전 청년공간', icon: '🏛️' },
 ];
 
-// 분야별 8개 세부 질문 풀 데이터베이스 (총 32개 질문)
 export const CATEGORY_QUESTION_POOLS: Record<CategoryTab, string[]> = {
   '일자리': [
     '취업관련 홈페이지 알려줘',
@@ -73,14 +70,12 @@ export const CATEGORY_QUESTION_POOLS: Record<CategoryTab, string[]> = {
   ],
 };
 
-// 특정 분야 질문 8개 중 3개를 랜덤 선택하는 함수
 function getRandomThreeForCategory(cat: CategoryTab): string[] {
   const pool = CATEGORY_QUESTION_POOLS[cat];
   const shuffled = [...pool].sort(() => 0.5 - Math.random());
   return shuffled.slice(0, 3);
 }
 
-// 초기 맞춤 상황 체크 필터값
 const initialFilter: UserSituationFilter = {
   region: '선택하세요.',
   maritalStatus: '선택하세요.',
@@ -95,45 +90,32 @@ const initialFilter: UserSituationFilter = {
 };
 
 export default function ChatWindow() {
-  // 대화 메시지 목록
+  // 사용자가 요청한 첫 인사말 깔끔한 줄바꿈 적용
   const [messages, setMessages] = useState<Message[]>([
     {
       id: uuidv4(),
       role: 'assistant',
-      content: `안녕하세요! 👋 **청춘스럽 정책안내 AI봇**입니다.\n\n대전 청년들을 위해 일자리, 주거, 교육, 창업, 복지, 금융 정책 정보와 대전 10개 청년공간 소식을 정확하고 친절하게 안내해 드려요.\n\n상단 **[📋 내 맞춤 상황 체크]**를 설정하시면 연령·소득·취업상태에 딱 맞는 맞춤 정책을 찾아드립니다! 하단 분야별 탭을 클릭하여 궁금한 내용을 바로 물어보세요. 😊`,
+      content: `안녕하세요! 👋\n**청춘스럽 정책안내 AI봇**입니다.\n\n대전 청년들을 위해 일자리, 주거, 교육, 창업, 복지, 금융 정책 정보와 대전 10개 청년공간 소식을 정확하고 친절하게 안내해 드려요.\n\n상단 **[📋 내 맞춤 상황 체크]**를 설정하시면 연령·소득·취업상태에 딱 맞는 맞춤 정책을 찾아드립니다! 하단 분야별 탭을 클릭하여 궁금한 내용을 바로 물어보세요. 😊`,
     },
   ]);
 
-  // 입력창 텍스트
   const [input, setInput] = useState('');
-  // AI 응답 중 여부
   const [isLoading, setIsLoading] = useState(false);
-  // 맞춤 상황 체크 필터 상태
   const [filter, setFilter] = useState<UserSituationFilter>(initialFilter);
-  // 필터 패널 열림 여부
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  
-  // 분야별 탭 선택 상태 (기본값: '일자리')
   const [activeCategoryTab, setActiveCategoryTab] = useState<CategoryTab>('일자리');
-  // 현재 분야의 랜덤 3개 추천 질문
   const [suggestedQuestions, setSuggestedQuestions] = useState<string[]>([]);
-  // 추천 질문 탭 열림/닫힘(접기) 상태 (기본값: 열림)
   const [isSuggestionsOpen, setIsSuggestionsOpen] = useState(true);
-  
-  // 세션 ID
   const [sessionId] = useState(() => uuidv4());
 
-  // 분야 탭 변경 또는 마운트 시 질문 3개 추출
   useEffect(() => {
     setSuggestedQuestions(getRandomThreeForCategory(activeCategoryTab));
   }, [activeCategoryTab]);
 
-  // 해당 분야 안에서 질문 3개 새로고침
   const handleRefreshQuestions = () => {
     setSuggestedQuestions(getRandomThreeForCategory(activeCategoryTab));
   };
 
-  // 스크롤 및 입력창 레프
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -141,9 +123,6 @@ export default function ChatWindow() {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // ==========================================
-  // 메시지 전송 핸들러
-  // ==========================================
   const sendMessage = useCallback(async (text: string) => {
     if (!text.trim() || isLoading) return;
 
@@ -257,7 +236,7 @@ export default function ChatWindow() {
 
   return (
     <div className="chat-container">
-      {/* ========== 헤더 (실물 로고 + 청춘스럽 정책안내 AI봇) ========== */}
+      {/* ========== 헤더 (모바일 반응형 텍스트 및 로고 최적화) ========== */}
       <header className="chat-header">
         <div className="header-left">
           <div className="header-title-group">
@@ -268,14 +247,17 @@ export default function ChatWindow() {
                 className="header-logo-img"
               />
             </div>
-            <h1 className="header-main-text">청춘스럽 정책안내 AI봇</h1>
+            <h1 className="header-main-text">
+              <span>청춘스럽 정책안내 AI봇</span>
+            </h1>
           </div>
         </div>
         <button
           className={`filter-toggle ${isFilterOpen ? 'filter-toggle-active' : ''}`}
           onClick={() => setIsFilterOpen(!isFilterOpen)}
         >
-          📋 내 맞춤 상황 체크 {isFilterOpen ? '닫기' : '설정'}
+          <span className="btn-full-text">📋 내 맞춤 상황 체크 {isFilterOpen ? '닫기' : '설정'}</span>
+          <span className="btn-short-text">📋 맞춤 {isFilterOpen ? '닫기' : '설정'}</span>
         </button>
       </header>
 
@@ -322,10 +304,8 @@ export default function ChatWindow() {
           )}
         </div>
 
-        {/* 접기/펼치기 토글 콘텐츠 */}
         {isSuggestionsOpen && (
           <div className="suggestions-content">
-            {/* 1단계: 분야별 카테고리 탭 (4개 선택) */}
             <div className="category-tab-bar">
               {CATEGORY_TABS.map(tab => (
                 <button
@@ -340,7 +320,6 @@ export default function ChatWindow() {
               ))}
             </div>
 
-            {/* 2단계: 선택된 분야의 3개 세부 질문 칩 */}
             <div className="suggestions-grid-3">
               {suggestedQuestions.map((q) => (
                 <button
