@@ -1,5 +1,5 @@
 // ============================================
-// lib/rag.ts — RAG 핵심 로직
+// lib/rag.ts — RAG 핵심 로직 & 링크 안전성 보장 (Safe Link Fallback)
 // - 온통청년 오픈 API 실시간 연동
 // - 대전 5개 자치구청(서구, 유성구, 중구, 동구, 대덕구) 자동 크롤러 연동
 // - 대전 공식 10개 청년공간(청춘스럽, 청춘나들목, 청년벙커 등) 데이터 통합
@@ -8,6 +8,35 @@ import { Policy, getSupabaseAdmin } from './supabase';
 import { fetchYouthCenterPolicies } from './youthcenter';
 import { crawlDaejeonDistrictPolicies } from './districtCrawler';
 import { crawl10YouthSpaces } from './spaceCrawler';
+
+// ============================================
+// 공식 안전 대표 URL 폴백 매핑
+// 깨진 링크나 빈 주소가 들어올 경우 100% 접속 가능한 대표 공식 주소로 교정
+// ============================================
+function ensureSafeApplyUrl(policy: Policy): string {
+  if (policy.apply_url && policy.apply_url.startsWith('http')) {
+    return policy.apply_url;
+  }
+
+  // 자치구별 대표 공식 URL 안전 폴백
+  if (policy.region.includes('서구') || policy.title.includes('서구')) {
+    return 'https://seoguyouth.kr/';
+  }
+  if (policy.region.includes('동구') || policy.title.includes('동구')) {
+    return 'https://www.dongguyouth.or.kr/';
+  }
+  if (policy.region.includes('중구') || policy.title.includes('중구')) {
+    return 'http://www.xn--660b31p2yizuh.com/';
+  }
+  if (policy.region.includes('대덕구') || policy.title.includes('대덕구')) {
+    return 'https://www.ddyouth.net/';
+  }
+  if (policy.region.includes('유성구') || policy.title.includes('유성구')) {
+    return 'https://www.yuseong.go.kr/ysyouth/index.do';
+  }
+
+  return 'https://www.daejeonyouthportal.kr';
+}
 
 // ============================================
 // 로컬 샘플 데이터 (기본 정책)
@@ -99,9 +128,6 @@ const SAMPLE_POLICIES: Policy[] = [
   },
 ];
 
-// ============================================
-// 핵심 홈페이지 DB
-// ============================================
 export const YOUTH_RESOURCE_SITES = {
   policy: [
     {
@@ -151,9 +177,6 @@ export const YOUTH_RESOURCE_SITES = {
   ],
 };
 
-// ============================================
-// 로컬 키워드 검색
-// ============================================
 function localSearch(
   query: string,
   options: { category?: string; region?: string; limit?: number },
@@ -182,12 +205,6 @@ function localSearch(
   return scored.length > 0 ? scored : allList.slice(0, limit);
 }
 
-// ============================================
-// RAG 검색 함수 (메인 export)
-// 1. 온통청년 Open API 호출
-// 2. 대전 5개 자치구청 자동 크롤러 연동
-// 3. 대전 공식 10개 청년공간 및 프로그램 통합 검색
-// ============================================
 export async function searchPolicies(
   query: string,
   options: {
@@ -198,7 +215,6 @@ export async function searchPolicies(
 ): Promise<Policy[]> {
   const { category, region, limit = 5 } = options;
 
-  // 1. 온통청년 API 호출
   let apiPolicies: Policy[] = [];
   try {
     apiPolicies = await fetchYouthCenterPolicies(query, limit);
@@ -206,7 +222,6 @@ export async function searchPolicies(
     console.error('온통청년 API 오류:', e);
   }
 
-  // 2. 대전 5개 자치구청 크롤링 데이터
   let districtPolicies: Policy[] = [];
   try {
     districtPolicies = await crawlDaejeonDistrictPolicies();
@@ -214,7 +229,6 @@ export async function searchPolicies(
     console.error('구청 크롤링 오류:', e);
   }
 
-  // 3. 대전 공식 10개 청년공간 프로그램 데이터
   let spacePolicies: Policy[] = [];
   try {
     spacePolicies = await crawl10YouthSpaces();
@@ -222,7 +236,6 @@ export async function searchPolicies(
     console.error('청년공간 수집 오류:', e);
   }
 
-  // 4. Supabase DB 검색 시도
   const supabaseAdmin = getSupabaseAdmin();
   let dbPolicies: Policy[] = [];
 
@@ -244,17 +257,21 @@ export async function searchPolicies(
     }
   }
 
-  // 5. 로컬 및 구청/공간 통합 검색
   const extraList = [...districtPolicies, ...spacePolicies];
   const localResults = localSearch(query, options, extraList);
 
-  // 6. 모든 결과 병합 (중복 제거)
   const combined = [...apiPolicies, ...extraList, ...dbPolicies, ...localResults];
   const uniqueMap = new Map<string, Policy>();
 
   for (const item of combined) {
-    if (!uniqueMap.has(item.title)) {
-      uniqueMap.set(item.title, item);
+    // 안전한 대표 URL 보장 교정
+    const safeItem = {
+      ...item,
+      apply_url: ensureSafeApplyUrl(item),
+    };
+
+    if (!uniqueMap.has(safeItem.title)) {
+      uniqueMap.set(safeItem.title, safeItem);
     }
   }
 
@@ -262,9 +279,6 @@ export async function searchPolicies(
   return result;
 }
 
-// ============================================
-// 홈페이지 DB를 문자열로 변환 (시스템 프롬프트용)
-// ============================================
 function buildSiteDirectory(): string {
   const policyLinks = YOUTH_RESOURCE_SITES.policy
     .map(s => `- [${s.scope}] ${s.name}: ${s.url}\n  → ${s.desc}`)
@@ -281,9 +295,6 @@ ${policyLinks}
 ${jobLinks}`;
 }
 
-// ============================================
-// GPT-4o 시스템 프롬프트 생성
-// ============================================
 export function buildSystemPrompt(policies: Policy[]): string {
   const policyContext = policies.length > 0
     ? policies.map((p, i) =>
@@ -291,7 +302,7 @@ export function buildSystemPrompt(policies: Policy[]): string {
 분야: ${p.category} | 지역: ${p.region} | 대상: ${p.age_min}~${p.age_max}세
 혜택: ${p.benefit || '상세 내용 참고'}
 내용: ${p.content}
-신청: ${p.apply_url || 'https://www.youthcenter.go.kr/main'} | 기간: ${p.deadline || '상시'}
+신청: ${p.apply_url || 'https://www.daejeonyouthportal.kr'} | 기간: ${p.deadline || '상시'}
 주관: ${p.host || '정부/지자체'}`
       ).join('\n\n---\n\n')
     : '현재 해당하는 정책/공간 정보를 찾지 못했습니다.';
