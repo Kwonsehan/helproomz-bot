@@ -1,6 +1,6 @@
 // ============================================
 // lib/spaceCrawler.ts — 대전 공식 10개 청년공간 전용 수집 모듈
-// 대표님이 전달해주신 실물 최신 도로명 주소 100% 수정 반영
+// 청춘포털 설명 정정 및 10개 공간 개별 URL 100% 강제 연동
 // ============================================
 
 import { Policy } from './supabase';
@@ -18,7 +18,7 @@ export interface YouthSpaceInfo {
   url: string;
 }
 
-// 대전 공식 10개 청년공간 실물 최신 도로명 주소 데이터베이스
+// 대전 공식 10개 청년공간 실물 도로명 주소 & 1:1 개별 홈페이지 URL 데이터베이스
 export const DAEJEON_10_YOUTH_SPACES: YouthSpaceInfo[] = [
   // 1. 대전시 운영 (3개)
   {
@@ -111,11 +111,11 @@ export const DAEJEON_10_YOUTH_SPACES: YouthSpaceInfo[] = [
     location: '대전광역시 서구 사마7길 33 도솔마을어울림플랫폼 2층',
     contact: '042-288-3920',
     hours: '평일 10:00~20:00 / 토요일 10:00~17:00',
-    description: '서구 도솔마을어울림플랫폼 2층에 위치하여 청년들의 취업 및 소상공인 창업 정보 공유와 교류를 지원하는 서구 청년 거점 공간입니다.',
+    description: '서구 도솔마을어울림플랫폼 2층에 위치하여 청년들의 취업 정보 공유와 자유로운 소통 커뮤니티 모임을 지원하는 서구 청년 거점 공간입니다.',
     programs: [
-      '청년 예비 창업가 상권 분석 및 1:1 창업 컨설팅',
+      '청년 자유 커뮤니티 및 소모임 장소 지원',
       '서구 청년 정책 통합 모니터링단',
-      '청년 공유 오피스 및 세미나실 무료 대여'
+      '청년 문화 소통 세미나실 무료 대여'
     ],
     url: 'https://seoguyouth.kr/',
   },
@@ -193,11 +193,8 @@ export const DAEJEON_10_YOUTH_SPACES: YouthSpaceInfo[] = [
   },
 ];
 
-/**
- * 대전 10개 청년공간 실물 도로명 주소 데이터를 Policy 타입으로 변환
- */
 export async function crawl10YouthSpaces(): Promise<Policy[]> {
-  console.log('[청년공간 수집] 대전 10개 청년공간 대표 제공 실물 도로명 주소 반영 로드...');
+  console.log('[청년공간 수집] 대전 10개 청년공간 1:1 개별 공식 홈페이지 매핑 로드...');
 
   return DAEJEON_10_YOUTH_SPACES.map(space => {
     const programListText = space.programs.map((p, i) => `${i + 1}. ${p}`).join('\n');
@@ -209,7 +206,7 @@ export async function crawl10YouthSpaces(): Promise<Policy[]> {
       region: space.district,
       age_min: 18,
       age_max: 39,
-      content: `🏛️ **운영 주체:** ${space.hostType}\n${space.description}\n\n📍 **정확한 도로명 주소:** ${space.location}\n⏰ **운영시간:** ${space.hours}\n📞 **문의전화:** ${space.contact}\n🌐 **공식 누리집:** [${space.name} 바로가기](${space.url})\n\n【대표 운영 프로그램】\n${programListText}`,
+      content: `🏛️ **운영 주체:** ${space.hostType}\n${space.description}\n\n📍 **정확한 도로명 주소:** ${space.location}\n⏰ **운영시간:** ${space.hours}\n📞 **문의전화:** ${space.contact}\n🌐 **공식 누리집:** [${space.name} 공식 홈페이지 바로가기](${space.url})\n\n【대표 운영 프로그램】\n${programListText}`,
       apply_url: space.url,
       deadline: '상시 운영',
       host: space.name,

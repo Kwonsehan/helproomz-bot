@@ -2,8 +2,8 @@
 // ============================================
 // components/ChatWindow.tsx
 // 메인 채팅창 컴포넌트
-// - 대전 공식 10개 청년공간 100% 정밀 검증 질문 반영 (청춘두두두: 서구 갈마동 정정)
-// - 서구 청춘포털 단독 질문으로 정돈
+// - 청춘포털 질문 검증 교정 (공유오피스 ➔ 커뮤니티 공간 안내)
+// - 질문 선택 및 답변 카드 클릭 시 해당 공간 공식 홈페이지 URL 100% 이동 연동
 // ============================================
 
 import { useState, useRef, useEffect, useCallback } from 'react';
@@ -66,7 +66,7 @@ export const CATEGORY_QUESTION_POOLS: Record<CategoryTab, string[]> = {
     '둔산동 청춘너나들이 동아리 스터디룸 예약',
     '갈마동 청춘두두두 공연 무대 및 촬영 스튜디오 신청',
     '유성구청년지원센터 및 궁동 스타트업 타운 위치',
-    '서구 청춘포털 이용 방법 및 공유 오피스 대여',
+    '서구 청춘포털 이용 방법 및 커뮤니티 공간 안내',
   ],
 };
 
@@ -279,7 +279,7 @@ export default function ChatWindow() {
         <div ref={bottomRef} />
       </main>
 
-      {/* ========== 공식 10개 청년공간 100% 정밀 검증 2단계 추천 질문 탭 ========== */}
+      {/* ========== 분야별 2단계 추천 질문 탭 ========== */}
       <div className="suggestions">
         <div className="suggestions-header">
           <button
