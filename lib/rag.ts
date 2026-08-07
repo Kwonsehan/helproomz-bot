@@ -1,13 +1,15 @@
 // ============================================
 // lib/rag.ts — RAG 핵심 로직
 // - 온통청년 오픈 API 실시간 연동
+// - 대전 5개 자치구청(서구, 유성구, 중구, 동구, 대덕구) 자동 크롤러 연동
 // - Supabase pgvector / 로컬 폴백
 // ============================================
 import { Policy, getSupabaseAdmin } from './supabase';
 import { fetchYouthCenterPolicies } from './youthcenter';
+import { crawlDaejeonDistrictPolicies } from './districtCrawler';
 
 // ============================================
-// 로컬 샘플 데이터 (Supabase 미설정 시 기본 제공)
+// 로컬 샘플 데이터 (기본 정책)
 // ============================================
 const SAMPLE_POLICIES: Policy[] = [
   {
@@ -153,17 +155,19 @@ export const YOUTH_RESOURCE_SITES = {
 // ============================================
 function localSearch(
   query: string,
-  options: { category?: string; region?: string; limit?: number }
+  options: { category?: string; region?: string; limit?: number },
+  extraPolicies: Policy[] = []
 ): Policy[] {
   const { category, region, limit = 5 } = options;
   const q = query.toLowerCase();
 
   const keywords = q.split(/\s+/).filter(k => k.length > 0);
+  const allList = [...SAMPLE_POLICIES, ...extraPolicies];
 
-  const scored = SAMPLE_POLICIES
+  const scored = allList
     .filter(p => {
       if (category && category !== '전체' && p.category !== category) return false;
-      if (region && region !== '전체' && p.region !== region && p.region !== '전국') return false;
+      if (region && region !== '전체' && !p.region.includes(region) && p.region !== '전국') return false;
       return true;
     })
     .map(p => {
@@ -174,13 +178,14 @@ function localSearch(
     .sort((a, b) => (b.similarity ?? 0) - (a.similarity ?? 0))
     .slice(0, limit);
 
-  return scored.length > 0 ? scored : SAMPLE_POLICIES.slice(0, limit);
+  return scored.length > 0 ? scored : allList.slice(0, limit);
 }
 
 // ============================================
 // RAG 검색 함수 (메인 export)
 // 1. 온통청년 Open API 호출
-// 2. 내장/Supabase 데이터 결합
+// 2. 대전 5개 자치구청(서구, 유성구, 중구, 동구, 대덕구) 자동 크롤러 연동
+// 3. 통합 검색 결과 반환
 // ============================================
 export async function searchPolicies(
   query: string,
@@ -192,15 +197,23 @@ export async function searchPolicies(
 ): Promise<Policy[]> {
   const { category, region, limit = 5 } = options;
 
+  // 1. 온통청년 API 호출
   let apiPolicies: Policy[] = [];
   try {
-    // 1. 온통청년 Open API 실시간 호출
     apiPolicies = await fetchYouthCenterPolicies(query, limit);
   } catch (e) {
     console.error('온통청년 API 호출 중 오류 발생:', e);
   }
 
-  // 2. Supabase DB 검색 시도
+  // 2. 대전 5개 자치구청 크롤링 수집 데이터 연동
+  let districtPolicies: Policy[] = [];
+  try {
+    districtPolicies = await crawlDaejeonDistrictPolicies();
+  } catch (e) {
+    console.error('구청 크롤링 데이터 수집 중 오류:', e);
+  }
+
+  // 3. Supabase DB 검색 시도
   const supabaseAdmin = getSupabaseAdmin();
   let dbPolicies: Policy[] = [];
 
@@ -222,11 +235,11 @@ export async function searchPolicies(
     }
   }
 
-  // 3. 로컬 내장 정책 검색
-  const localResults = localSearch(query, options);
+  // 4. 로컬 및 구청 크롤링 정책 검색
+  const localResults = localSearch(query, options, districtPolicies);
 
-  // 4. API 결과 + DB/로컬 결과 병합 (중복 제거)
-  const combined = [...apiPolicies, ...dbPolicies, ...localResults];
+  // 5. 모든 결과 병합 (중복 제거)
+  const combined = [...apiPolicies, ...districtPolicies, ...dbPolicies, ...localResults];
   const uniqueMap = new Map<string, Policy>();
 
   for (const item of combined) {
@@ -276,24 +289,24 @@ export function buildSystemPrompt(policies: Policy[]): string {
   const siteDirectory = buildSiteDirectory();
 
   return `당신은 대전서구 청년공간 청춘스럽의 청년정책 전문 AI 안내봇입니다.
-청년들이 정부 및 지자체 정책을 쉽게 이해하고 활용할 수 있도록 친절하고 정확하게 안내합니다.
+청년들이 정부, 대전광역시 및 대전 5개 자치구청(서구, 유성구, 중구, 동구, 대덕구) 정책을 쉽게 이해하고 활용할 수 있도록 친절하고 정확하게 안내합니다.
 
 【핵심 역할】
-- 온통청년 OPEN API 실시간 데이터와 대전광역시 청년정책을 바탕으로 맞춤형 안내
+- 온통청년 OPEN API 실시간 데이터 + 대전 5개 자치구청(서구, 유성구, 중구, 동구, 대덕구) 최신 수집 정책을 종합 안내
 - 일자리, 주거, 금융, 복지, 교육 정책을 명확하게 설명
 - 클릭 시 바로 이동 가능한 공식 신청 URL 안내
 
 【답변 규칙】
-1. 아래 제공된 최신 정책 정보(온통청년 API 실시간 조회 결과 포함)를 최우선으로 활용하여 답변하세요
+1. 아래 제공된 최신 정책 정보(구청 크롤링 정책 및 온통청년 API 포함)를 최우선으로 활용하여 답변하세요
 2. 답변은 친근하고 이해하기 쉽게 작성하세요 (청년 눈높이)
 3. 신청 방법, 지원 자격, 혜택을 명확히 구분하여 설명하세요
 4. 관련 링크가 있으면 반드시 [사이트이름](URL) 형식으로 작성하여 사용자가 클릭 시 이동하도록 하세요
-5. 사용자가 "취업관련 홈페이지 알려줘" 또는 홈페이지 목록을 물어보면, 아래 디렉토리의 전국 및 대전 지역 일자리/취업 사이트(고용24, 잡알리오, 일경험인턴, 청년인재DB, 대전일자리정보망 등)를 정돈하여 클릭할 수 있는 링크와 함께 친절하게 안내하세요!
+5. 사용자가 대전 특정 자치구(서구, 유성구, 중구, 동구, 대덕구) 정책을 물어보면 수집된 자치구 공고 내용을 명확히 알려주세요!
 
 【청년정책·일자리 핵심 홈페이지 디렉토리】
 ${siteDirectory}
 
-【현재 실시간 검색된 정책 정보 (온통청년 API 연동)】
+【현재 검색된 대전 5개 구청 수집 공고 및 정책 정보】
 ${policyContext}
 
 위 정책 정보와 홈페이지 디렉토리를 바탕으로 사용자의 질문에 성실하게 답변해주세요.`;
