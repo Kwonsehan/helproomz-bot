@@ -2,11 +2,12 @@
 // lib/rag.ts — RAG 핵심 로직
 // - 온통청년 오픈 API 실시간 연동
 // - 대전 5개 자치구청(서구, 유성구, 중구, 동구, 대덕구) 자동 크롤러 연동
-// - Supabase pgvector / 로컬 폴백
+// - 대전 공식 10개 청년공간(청춘스럽, 청춘나들목, 청년벙커 등) 데이터 통합
 // ============================================
 import { Policy, getSupabaseAdmin } from './supabase';
 import { fetchYouthCenterPolicies } from './youthcenter';
 import { crawlDaejeonDistrictPolicies } from './districtCrawler';
+import { crawl10YouthSpaces } from './spaceCrawler';
 
 // ============================================
 // 로컬 샘플 데이터 (기본 정책)
@@ -184,8 +185,8 @@ function localSearch(
 // ============================================
 // RAG 검색 함수 (메인 export)
 // 1. 온통청년 Open API 호출
-// 2. 대전 5개 자치구청(서구, 유성구, 중구, 동구, 대덕구) 자동 크롤러 연동
-// 3. 통합 검색 결과 반환
+// 2. 대전 5개 자치구청 자동 크롤러 연동
+// 3. 대전 공식 10개 청년공간 및 프로그램 통합 검색
 // ============================================
 export async function searchPolicies(
   query: string,
@@ -202,18 +203,26 @@ export async function searchPolicies(
   try {
     apiPolicies = await fetchYouthCenterPolicies(query, limit);
   } catch (e) {
-    console.error('온통청년 API 호출 중 오류 발생:', e);
+    console.error('온통청년 API 오류:', e);
   }
 
-  // 2. 대전 5개 자치구청 크롤링 수집 데이터 연동
+  // 2. 대전 5개 자치구청 크롤링 데이터
   let districtPolicies: Policy[] = [];
   try {
     districtPolicies = await crawlDaejeonDistrictPolicies();
   } catch (e) {
-    console.error('구청 크롤링 데이터 수집 중 오류:', e);
+    console.error('구청 크롤링 오류:', e);
   }
 
-  // 3. Supabase DB 검색 시도
+  // 3. 대전 공식 10개 청년공간 프로그램 데이터
+  let spacePolicies: Policy[] = [];
+  try {
+    spacePolicies = await crawl10YouthSpaces();
+  } catch (e) {
+    console.error('청년공간 수집 오류:', e);
+  }
+
+  // 4. Supabase DB 검색 시도
   const supabaseAdmin = getSupabaseAdmin();
   let dbPolicies: Policy[] = [];
 
@@ -235,11 +244,12 @@ export async function searchPolicies(
     }
   }
 
-  // 4. 로컬 및 구청 크롤링 정책 검색
-  const localResults = localSearch(query, options, districtPolicies);
+  // 5. 로컬 및 구청/공간 통합 검색
+  const extraList = [...districtPolicies, ...spacePolicies];
+  const localResults = localSearch(query, options, extraList);
 
-  // 5. 모든 결과 병합 (중복 제거)
-  const combined = [...apiPolicies, ...districtPolicies, ...dbPolicies, ...localResults];
+  // 6. 모든 결과 병합 (중복 제거)
+  const combined = [...apiPolicies, ...extraList, ...dbPolicies, ...localResults];
   const uniqueMap = new Map<string, Policy>();
 
   for (const item of combined) {
@@ -277,37 +287,38 @@ ${jobLinks}`;
 export function buildSystemPrompt(policies: Policy[]): string {
   const policyContext = policies.length > 0
     ? policies.map((p, i) =>
-        `[정책 ${i + 1}] ${p.title}
+        `[정책/공간 ${i + 1}] ${p.title}
 분야: ${p.category} | 지역: ${p.region} | 대상: ${p.age_min}~${p.age_max}세
 혜택: ${p.benefit || '상세 내용 참고'}
 내용: ${p.content}
 신청: ${p.apply_url || 'https://www.youthcenter.go.kr/main'} | 기간: ${p.deadline || '상시'}
 주관: ${p.host || '정부/지자체'}`
       ).join('\n\n---\n\n')
-    : '현재 해당하는 정책 정보를 찾지 못했습니다.';
+    : '현재 해당하는 정책/공간 정보를 찾지 못했습니다.';
 
   const siteDirectory = buildSiteDirectory();
 
   return `당신은 대전서구 청년공간 청춘스럽의 청년정책 전문 AI 안내봇입니다.
-청년들이 정부, 대전광역시 및 대전 5개 자치구청(서구, 유성구, 중구, 동구, 대덕구) 정책을 쉽게 이해하고 활용할 수 있도록 친절하고 정확하게 안내합니다.
+청년들에게 중앙정부, 대전광역시, 대전 5개 자치구청(서구, 유성구, 중구, 동구, 대덕구) 정책과 대전 공식 10개 청년공간 정보를 친절하고 정확하게 안내합니다.
 
-【핵심 역할】
-- 온통청년 OPEN API 실시간 데이터 + 대전 5개 자치구청(서구, 유성구, 중구, 동구, 대덕구) 최신 수집 정책을 종합 안내
-- 일자리, 주거, 금융, 복지, 교육 정책을 명확하게 설명
-- 클릭 시 바로 이동 가능한 공식 신청 URL 안내
+【대전 공식 10개 청년공간 개요】
+1. 대전시 운영: 청춘나들목(대전역 지하상가), 청춘너나들이(서구 둔산동), 청춘두두두(중구 대전도시공사 지하)
+2. 서구 운영: 청춘스럽(서구 계룡로 대표공간), 청춘정거장(궁동/둔산), 청춘포털(갈마)
+3. 동구 운영: 동구동락(자양동)
+4. 중구 운영: 청년모아(선화동)
+5. 대덕구 운영: 청년벙커(대덕구청 지하)
+6. 유성구 운영: 유성구청년지원센터(궁동)
 
 【답변 규칙】
-1. 아래 제공된 최신 정책 정보(구청 크롤링 정책 및 온통청년 API 포함)를 최우선으로 활용하여 답변하세요
-2. 답변은 친근하고 이해하기 쉽게 작성하세요 (청년 눈높이)
-3. 신청 방법, 지원 자격, 혜택을 명확히 구분하여 설명하세요
-4. 관련 링크가 있으면 반드시 [사이트이름](URL) 형식으로 작성하여 사용자가 클릭 시 이동하도록 하세요
-5. 사용자가 대전 특정 자치구(서구, 유성구, 중구, 동구, 대덕구) 정책을 물어보면 수집된 자치구 공고 내용을 명확히 알려주세요!
+1. 검색된 최신 정책 및 10개 청년공간 프로그램 정보를 최우선으로 활용하여 답변하세요
+2. 사용자가 대전 청년공간 위치, 프로그램, 운영시간을 물어보면 위 10개 공식 청년공간 정보를 한눈에 알아보기 쉽게 안내하세요
+3. 관련 링크가 있으면 반드시 [사이트이름](URL) 형식으로 클릭 시 이동하도록 작성하세요
 
 【청년정책·일자리 핵심 홈페이지 디렉토리】
 ${siteDirectory}
 
-【현재 검색된 대전 5개 구청 수집 공고 및 정책 정보】
+【현재 검색된 대전 정책 및 10개 청년공간 데이터】
 ${policyContext}
 
-위 정책 정보와 홈페이지 디렉토리를 바탕으로 사용자의 질문에 성실하게 답변해주세요.`;
+위 정보를 바탕으로 청년들의 질문에 성실하게 답변해주세요.`;
 }
