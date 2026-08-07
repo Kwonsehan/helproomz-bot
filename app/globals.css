@@ -233,7 +233,6 @@ html, body {
   display: none;
 }
 
-/* 모바일 전용 반응형 헤더 처리 */
 @media (max-width: 640px) {
   .chat-header {
     padding: 10px 14px;
@@ -471,7 +470,7 @@ html, body {
 
 @media (max-width: 640px) {
   .message-content-area {
-    max-width: 90%;
+    max-width: 92%;
   }
 }
 
@@ -586,17 +585,17 @@ html, body {
 }
 
 /* ============================================
-   추천 정책 카드 TOP 2
+   [신규] 추천 정책 카드 TOP 2 (슬림 컴팩트 디자인)
    ============================================ */
 .related-policies {
-  margin-top: 6px;
+  margin-top: 4px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .related-title {
-  font-size: 13.5px;
+  font-size: 12.5px;
   font-weight: 800;
   color: var(--chungchun-blue);
 }
@@ -604,78 +603,94 @@ html, body {
 .policy-cards-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+  gap: 8px;
 }
 
 @media (max-width: 640px) {
   .policy-cards-grid {
     grid-template-columns: 1fr;
+    gap: 6px;
   }
 }
 
-.policy-card {
+/* 슬림 컴팩트 카드 */
+.policy-card-compact {
   background: #ffffff;
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: 16px;
-  box-shadow: var(--shadow-sm);
+  border-radius: 10px;
+  padding: 10px 12px;
+  box-shadow: 0 2px 6px rgba(27, 42, 128, 0.04);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
+  transition: all 0.2s ease;
 }
 
-.card-badge-row {
+.policy-card-compact:hover {
+  border-color: var(--chungchun-blue);
+  box-shadow: 0 4px 12px rgba(27, 42, 128, 0.1);
+}
+
+.card-compact-header {
   display: flex;
-  gap: 6px;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
 }
 
-.badge {
-  font-size: 11px;
+.compact-badge {
+  background: var(--accent-light);
+  color: #B45309;
   font-weight: 700;
-  padding: 3px 9px;
+  padding: 1px 7px;
   border-radius: var(--radius-pill);
 }
 
-.badge-cat {
-  background: var(--accent-light);
-  color: #B45309;
+.compact-region {
+  color: var(--text-secondary);
+  font-size: 11px;
 }
 
-.badge-reg {
-  background: #E0E7FF;
-  color: #3730A3;
-}
-
-.card-title {
-  font-size: 15px;
+.compact-title {
+  font-size: 13.5px;
   font-weight: 800;
   color: var(--chungchun-blue);
+  line-height: 1.35;
+  margin-top: 2px;
 }
 
-.card-content {
-  font-size: 13px;
+.compact-benefit {
+  font-size: 11.5px;
   color: var(--text-secondary);
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
-.card-footer {
+.compact-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 6px;
-  padding-top: 8px;
+  margin-top: 4px;
+  padding-top: 4px;
   border-top: 1px dashed var(--border);
-  font-size: 12px;
+  font-size: 11.5px;
+}
+
+.compact-target {
   color: var(--text-muted);
 }
 
-.card-link {
+.compact-link {
   color: var(--chungchun-blue);
-  font-weight: 700;
+  font-weight: 800;
   text-decoration: none;
+  font-size: 12px;
+}
+
+.compact-link:hover {
+  color: var(--chungchun-blue-light);
 }
 
 /* ============================================

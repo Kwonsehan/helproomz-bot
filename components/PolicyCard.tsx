@@ -1,21 +1,10 @@
 'use client';
 // ============================================
 // components/PolicyCard.tsx
-// AI가 찾아준 관련 정책 카드 컴포넌트
+// AI 맞춤 추천 정책 미니 컴포넌트 (슬림 컴팩트 디자인)
 // ============================================
 
 import { Policy } from '@/lib/supabase';
-
-// 카테고리별 색상 클래스
-const CATEGORY_COLORS: Record<string, string> = {
-  '일자리': 'badge-job',
-  '주거': 'badge-house',
-  '교육': 'badge-edu',
-  '창업': 'badge-startup',
-  '복지': 'badge-welfare',
-  '금융': 'badge-finance',
-  '기타': 'badge-etc',
-};
 
 interface PolicyCardProps {
   policy: Policy;
@@ -25,46 +14,37 @@ interface PolicyCardProps {
 export default function PolicyCard({ policy, index }: PolicyCardProps) {
   return (
     <div
-      className="policy-card"
-      style={{ animationDelay: `${index * 0.1}s` }}
+      className="policy-card-compact"
+      style={{ animationDelay: `${index * 0.08}s` }}
     >
-      {/* 카드 헤더 */}
-      <div className="policy-card-header">
-        <span className={`badge ${CATEGORY_COLORS[policy.category] || 'badge-etc'}`}>
-          {policy.category}
-        </span>
-        <span className="policy-region">📍 {policy.region}</span>
+      {/* 뱃지 & 지역 (슬림 한 줄) */}
+      <div className="card-compact-header">
+        <span className="compact-badge">{policy.category}</span>
+        <span className="compact-region">📍 {policy.region}</span>
       </div>
 
-      {/* 정책명 */}
-      <h3 className="policy-title">{policy.title}</h3>
+      {/* 정책 제목 */}
+      <h4 className="compact-title">{policy.title}</h4>
 
-      {/* 혜택 요약 */}
+      {/* 혜택 요약 (있을 때만) */}
       {policy.benefit && (
-        <div className="policy-benefit">
-          <span className="benefit-icon">🎁</span>
-          <span className="benefit-text">{policy.benefit}</span>
-        </div>
+        <p className="compact-benefit">🎁 {policy.benefit}</p>
       )}
 
-      {/* 메타 정보 */}
-      <div className="policy-meta">
-        <span>👤 {policy.age_min}~{policy.age_max}세</span>
-        {policy.deadline && <span>📅 {policy.deadline}</span>}
-        {policy.host && <span>🏢 {policy.host}</span>}
+      {/* 가로 슬림 메타 & 신청 링크 */}
+      <div className="compact-footer">
+        <span className="compact-target">👤 {policy.age_min}~{policy.age_max}세</span>
+        {policy.apply_url && (
+          <a
+            href={policy.apply_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="compact-link"
+          >
+            신청하기 ➔
+          </a>
+        )}
       </div>
-
-      {/* 신청 버튼 */}
-      {policy.apply_url && (
-        <a
-          href={policy.apply_url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="apply-btn"
-        >
-          신청하기 →
-        </a>
-      )}
     </div>
   );
 }
