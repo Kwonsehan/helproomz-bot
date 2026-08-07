@@ -1,14 +1,25 @@
 // ============================================
-// app/api/chat/route.ts — AI 대화 스트리밍 & 추천 정책 조건부 카드 반환 API
-// - 맞춤 설정 안함 ➔ '💡 추천 정책 TOP 2' (질문 분야 연관 카테고리 무작위 2개)
-// - 맞춤 설정 함 ➔ '💡 맞춤 추천 정책 TOP 2' (사용자 맞춤 필터 반영 2개)
+// app/api/chat/route.ts — AI 대화 스트리밍 & 무작위 셔플 추천 정책 카드 API
+// - 맞춤 설정 안함 ➔ '💡 추천 정책 TOP 2' (검색된 정책 5~10개 중 매번 다채롭게 무작위 2개 추출)
+// - 맞춤 설정 함 ➔ '💡 맞춤 추천 정책 TOP 2' (맞춤 조건 정책 중 매번 무작위 2개 추출)
 // ============================================
 
 import { getOpenAIClient } from '@/lib/openai';
 import { searchPolicies, buildSystemPrompt } from '@/lib/rag';
 import { UserSituationFilter } from '@/components/PolicyFilter';
+import { Policy } from '@/lib/supabase';
 
 export const runtime = 'nodejs';
+
+// 배열 요소를 무작위 셔플하는 Fisher-Yates 알고리즘
+function shuffleArray<T>(array: T[]): T[] {
+  const arr = [...array];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
 
 // 사용자가 맞춤 필터를 설정했는지 여부 검사 함수
 function isCustomFilterApplied(filter?: UserSituationFilter): boolean {
@@ -42,22 +53,22 @@ export async function POST(req: Request) {
     const lastUserMessage = messages[messages.length - 1]?.content || '';
     const isCustomFiltered = isCustomFilterApplied(filter);
 
-    // RAG 정책 검색 (맞춤 설정 여부 반영)
-    const policies = await searchPolicies(lastUserMessage, {
+    // RAG 정책 검색 (풍부한 셔플을 위해 8개까지 폭넓게 수집)
+    const rawPolicies = await searchPolicies(lastUserMessage, {
       category: filter?.category && filter.category !== '전체' ? filter.category : undefined,
       region: filter?.region && filter.region !== '선택하세요.' ? filter.region : undefined,
-      limit: 5,
+      limit: 8,
     });
 
-    // 2개 추천 카드 선택 (맞춤 설정 안했을 경우 약간의 셔플 무작위성 부여)
-    let top2Policies = policies.slice(0, 2);
-    if (!isCustomFiltered && policies.length >= 2) {
-      // 맞춤 설정 안 한 경우 연관 정책 중 2개 무작위 믹스
-      const shuffled = [...policies].sort(() => 0.5 - Math.random());
+    // 매 질문마다 똑같은 정책만 고정 반환되는 현상 방지: 무작위 셔플 후 상위 2개 추출
+    let top2Policies: Policy[] = [];
+
+    if (rawPolicies.length > 0) {
+      const shuffled = shuffleArray(rawPolicies);
       top2Policies = shuffled.slice(0, 2);
     }
 
-    const systemPrompt = buildSystemPrompt(policies);
+    const systemPrompt = buildSystemPrompt(rawPolicies);
     const openai = getOpenAIClient();
 
     const response = await openai.chat.completions.create({
@@ -77,7 +88,7 @@ export async function POST(req: Request) {
 
     const stream = new ReadableStream({
       async start(controller) {
-        // 1. 추천 정책 카드 2개 및 맞춤 설정 여부(isCustomFiltered) 클라이언트로 전달
+        // 1. 매번 다채롭게 무작위 셔플된 추천 정책 카드 2개 클라이언트로 전달
         const policyEvent = `data: ${JSON.stringify({
           type: 'policies',
           policies: top2Policies,
