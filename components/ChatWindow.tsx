@@ -2,7 +2,7 @@
 // ============================================
 // components/ChatWindow.tsx
 // 메인 채팅창 컴포넌트
-// - 대표님 최종 정정 31개 추천 질문 데이터베이스 100% 반영
+// - 대표님 코멘트 100% 반영: URL 교정, 청년미래적금, 삭제 요청 질문 정돈 및 대전창업온라인 반영
 // ============================================
 
 import { useState, useRef, useEffect, useCallback } from 'react';
@@ -27,7 +27,7 @@ export const CATEGORY_TABS: CategoryTabInfo[] = [
   { id: '청년공간', label: '대전 청년공간', shortLabel: '청년공간', icon: '🏛️' },
 ];
 
-// 대표님이 직접 정정해주신 분야별 31개 최종 검증 추천 질문 풀
+// 대표님 코멘트 피드백 100% 적용된 분야별 29개 최종 검증 추천 질문 풀
 export const CATEGORY_QUESTION_POOLS: Record<CategoryTab, string[]> = {
   '일자리': [
     '취업관련 홈페이지 알려줘',
@@ -43,21 +43,16 @@ export const CATEGORY_QUESTION_POOLS: Record<CategoryTab, string[]> = {
     '대전 청년 월세 지원 금액이랑 기간 알려줘',
     '대전 청년 주택 임차보증금 이자 지원 조건',
     '미래두배 청년통장 자격 조건이 뭐야?',
-    '청년도약계좌 가입 조건 및 혜택 알려줘',
+    '청년미래적금 가입 조건 및 혜택 알려줘',
     '대전 청년 전세보증금 반환보증 보증료 지원',
     '대전 무주택 청년 주거 정책 추천해줘',
     '대전 청년부부 결혼 장려금(최대 500만원) 신청 자격',
-    '대전 청년 학자금 대출 이자 지원 대상',
   ],
   '창업복지': [
-    '대전 창업 지원 및 보육 공간 알려줘',
-    '청년 소상공인 임차료 지원 사업 내용',
+    '대전창업온라인 홈페이지 알려줘',
+    '국가기술자격증 시험 응시료 50% 할인(Q-Net) 신청법',
     '대전 청년 마음건강 무료 심리상담 신청법',
-    '대전 서구/유성구 청년 자격증 응시료 지원(연 10만원)',
     '대전 청년 예술인 창작 활동 지원사업 알려줘',
-    '대전 청년 커뮤니티 동아리 지원사업',
-    '대전 청년 1인가구 병원 안심동행 및 생활 지원',
-    '궁동 창업타운 청년 스타트업 멘토링 신청',
   ],
   '청년공간': [
     '대전 서구 청년공간 청춘스럽 위치와 프로그램',
@@ -74,7 +69,7 @@ export const CATEGORY_QUESTION_POOLS: Record<CategoryTab, string[]> = {
 function getRandomThreeForCategory(cat: CategoryTab): string[] {
   const pool = CATEGORY_QUESTION_POOLS[cat];
   const shuffled = [...pool].sort(() => 0.5 - Math.random());
-  return shuffled.slice(0, 3);
+  return shuffled.slice(0, Math.min(3, pool.length));
 }
 
 const initialFilter: UserSituationFilter = {

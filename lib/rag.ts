@@ -1,8 +1,7 @@
 // ============================================
-// lib/rag.ts — RAG 핵심 로직 & 10개 청년공간 맞춤 설명 100% 매핑
-// - 온통청년 오픈 API 실시간 연동
-// - 대전 5개 자치구청(서구, 유성구, 중구, 동구, 대덕구) 크롤러 연동
-// - 대전 공식 10개 청년공간 맞춤 위치/혜택 정보 통합
+// lib/rag.ts — RAG 핵심 로직 & 대표님 지정 정밀 URL/정책 100% 매핑
+// - 구해줘 정장, 월세, 임차보증금, 미래두배청년통장, 청년미래적금, 반환보증료, 결혼장려금 URL 1:1 지정
+// - 대전창업온라인(https://d-startup.kr/), Q-Net 국가 자격증 응시료, 대전문화재단 연결
 // ============================================
 import { Policy, getSupabaseAdmin } from './supabase';
 import { fetchYouthCenterPolicies } from './youthcenter';
@@ -25,7 +24,6 @@ function ensureSafeApplyUrl(policy: Policy): string {
     return policy.apply_url;
   }
 
-  // 자치구별 대표 공식 URL 안전 폴백
   if (policy.region.includes('서구') || policy.title.includes('서구')) {
     return 'https://seoguyouth.kr/';
   }
@@ -45,21 +43,21 @@ function ensureSafeApplyUrl(policy: Policy): string {
   return 'https://www.daejeonyouthportal.kr';
 }
 
-// 100% 검증된 개별 세부 공식 신청 URL 데이터베이스
+// 대표님 코멘트 100% 정밀 수정을 반영한 핵심 대표 정책 데이터베이스
 const SAMPLE_POLICIES: Policy[] = [
   {
     id: '1', title: '미래두배 청년통장', category: '금융', region: '대전광역시',
     age_min: 18, age_max: 39,
     content: '근로청년이 매월 15만원씩 2년간 저축 시, 대전시가 적립금과 동일한 금액을 매칭 지원하여 목돈 마련을 돕는 사업입니다.',
-    apply_url: 'https://www.daejeonyouthportal.kr/board/BBSMSTR_000000000231/articleList.do?commonMenuNo=451_452_453_454',
+    apply_url: 'https://www.daejeonyouthportal.kr/content/CT_000000000067/cntPage.do?commonMenuNo=36_281',
     deadline: '연중 (대전청년내일재단 별도 공고)',
-    host: '대전광역시 / 대전청년내일재단', benefit: '본인 저축액과 동일금액 매칭 지원',
+    host: '대전광역시 / 대전청년내일재단', benefit: '본인 저축액과 동일금액 매칭 지원 (최대 720만원)',
   },
   {
     id: '2', title: '청년부부 결혼 장려금 지원', category: '복지', region: '대전광역시',
     age_min: 18, age_max: 39,
     content: '고물가 시대에 결혼 무렵 주택마련 및 살림 장만을 위한 비용 부담을 덜어주기 위해 결혼장려금을 지원합니다. 혼인신고일 포함 대전 내 6개월 이상 거주한 초혼 혼인신고자가 대상입니다.',
-    apply_url: 'https://www.daejeonyouthportal.kr/board/BBSMSTR_000000000257/articleList.do?commonMenuNo=451_452_453_454',
+    apply_url: 'https://www.daejeonyouthportal.kr/content/CT_000000000497/cntPage.do?commonMenuNo=304_305_323_327&dpmSectionFst=1&dpmSectionScd=7',
     deadline: '상시 신청',
     host: '대전광역시 / 대전청년내일재단', benefit: '1인당 250만원 (부부 합산 최대 500만원)',
   },
@@ -67,7 +65,7 @@ const SAMPLE_POLICIES: Policy[] = [
     id: '3', title: '대전 청년 월세지원 사업', category: '주거', region: '대전광역시',
     age_min: 19, age_max: 39,
     content: '기준 중위소득 150% 이하인 무주택 청년 1인가구 및 청년부부를 대상으로 월세를 지원합니다. 임차 보증금 1억원 이하, 월세 60만원 이하의 건물에 거주해야 합니다.',
-    apply_url: 'https://www.daejeonyouthportal.kr/board/BBSMSTR_000000000234/articleList.do?commonMenuNo=451_452_453_454',
+    apply_url: 'https://www.daejeonyouthportal.kr/content/CT_000000000061/cntPage.do?commonMenuNo=79_80',
     deadline: '연중 (분기별 등 별도 공고)',
     host: '대전광역시 / 대전청년내일재단', benefit: '월 최대 20만원씩 최대 12개월 (최대 240만원)',
   },
@@ -75,7 +73,7 @@ const SAMPLE_POLICIES: Policy[] = [
     id: '4', title: '구직청년 면접용 정장대여 (구해줘! 정장)', category: '일자리', region: '대전광역시',
     age_min: 18, age_max: 39,
     content: '취업 면접을 앞둔 구직 청년들에게 면접에 필요한 정장을 무료로 대여해주는 사업입니다. 남성은 재킷, 셔츠, 넥타이, 바지, 벨트 / 여성은 재킷, 블라우스, 치마, 구두를 대여할 수 있습니다.',
-    apply_url: 'https://www.daejeonyouthportal.kr/board/BBSMSTR_000000000244/articleList.do?commonMenuNo=451_452_453_454',
+    apply_url: 'https://www.daejeonyouthportal.kr/biz/integratedYouth.do?section=1&commonMenuNo=438_323_514_517',
     deadline: '상시 (예산 소진 시까지)',
     host: '대전청년내일재단', benefit: '면접용 정장 세트 무료 대여 (연 600명 규모)',
   },
@@ -83,7 +81,7 @@ const SAMPLE_POLICIES: Policy[] = [
     id: '5', title: '청년 주택임차보증금 이자지원', category: '주거', region: '대전광역시',
     age_min: 19, age_max: 39,
     content: '목돈 마련이 어려운 청년들의 주거비용 부담을 완화하기 위해 전월세 주택 임차보증금 대출 추천 및 이자를 지원합니다. 본인 연소득 4천5백만원 이하(부부합산 1억원 이하)가 대상입니다.',
-    apply_url: 'https://www.daejeonyouthportal.kr/board/BBSMSTR_000000000233/articleList.do?commonMenuNo=451_452_453_454',
+    apply_url: 'https://www.daejeonyouthportal.kr/content/CT_000000000059/cntPage.do?commonMenuNo=79_80_81',
     deadline: '연중 (자금 소진 시까지)',
     host: '대전광역시 / 대전청년내일재단 / 하나은행', benefit: '대출 이자 지원 (최대 2.25%, 연 최대 250만원)',
   },
@@ -96,12 +94,12 @@ const SAMPLE_POLICIES: Policy[] = [
     host: '대전광역시', benefit: '실무형 인재양성 교육 및 우수 기업 취업 연계',
   },
   {
-    id: '7', title: '대학생 학자금 이자지원 및 신용회복 지원', category: '교육', region: '대전광역시',
-    age_min: 18, age_max: 39,
-    content: '청년의 학업부담 경감을 위해 대전에 거주하는 대학(원)생을 대상으로 한국장학재단 학자금대출 이자 전액을 지원하며, 신용유의자의 경우 분할상환약정 초입금(10%)을 지원합니다.',
-    apply_url: 'https://www.daejeonyouthportal.kr/board/BBSMSTR_000000000232/articleList.do?commonMenuNo=451_452_453_454',
-    deadline: '상·하반기 별도 공고',
-    host: '대전광역시 / 한국장학재단', benefit: '학자금 대출 이자 발생분 전액 지원 등',
+    id: '7', title: '국가 자격증 시험 응시료 지원 (Q-Net 연계 청년 50% 할인)', category: '일자리', region: '전국',
+    age_min: 15, age_max: 34,
+    content: '한국산업인력공단에서 청년 구직자의 자격증 취득 비용 부담을 덜어주기 위해 국가기술자격 시험 응시료를 연 3회, 회당 50% 할인을 지원하는 사업입니다.',
+    apply_url: 'https://www.q-net.or.kr',
+    deadline: '상시 (원서 접수 시 신청)',
+    host: '고용노동부 / 한국산업인력공단 (Q-Net)', benefit: '국가기술자격 시험 응시료 50% 할인 (연 3회)',
   },
   {
     id: '8', title: '청년 일경험 인턴 지원사업', category: '일자리', region: '전국',
@@ -128,12 +126,12 @@ const SAMPLE_POLICIES: Policy[] = [
     host: '고용노동부', benefit: '구직촉진수당 월 50만원 × 최대 6개월 (I유형)',
   },
   {
-    id: '11', title: '청년도약계좌', category: '금융', region: '전국',
+    id: '11', title: '청년미래적금 (청년 자산형성 지원)', category: '금융', region: '전국',
     age_min: 19, age_max: 34,
-    content: '만 19~34세 청년이 매월 최대 70만원을 납입하면 정부가 기여금을 지원하여 5년 만기 시 최대 5천만원의 목돈 마련을 지원하는 사업입니다. 개인소득 7,500만원 이하인 근로·사업소득이 있는 청년이 대상입니다.',
-    apply_url: 'https://ylaccount.kinfa.or.kr/',
-    deadline: '매월 신규 가입 신청',
-    host: '금융위원회 / 서민금융진흥원', benefit: '5년 만기 최대 5,000만원 + 비과세 혜택',
+    content: '청년의 소득과 자산 형성을 맞춤 지원하기 위해 서민금융진흥원에서 운영하는 자산형성 지원 금융 상품입니다. 정부 기여금과 이자 비과세 혜택을 통해 목돈 마련을 돕습니다.',
+    apply_url: 'https://fill4young.kinfa.or.kr/yfs/main',
+    deadline: '상시 가입 신청',
+    host: '금융위원회 / 서민금융진흥원', benefit: '정부 기여금 + 비과세 목돈 형성 혜택',
   },
   {
     id: '12', title: '대전 일자리정보망 (jobdaejeon)', category: '일자리', region: '대전광역시',
@@ -147,9 +145,25 @@ const SAMPLE_POLICIES: Policy[] = [
     id: '13', title: '대전 청년 전세보증금 반환보증 보증료 지원', category: '주거', region: '대전광역시',
     age_min: 19, age_max: 39,
     content: '전세 사기 예방을 위해 무주택 청년이 전세보증금 반환보증에 가입할 때 지불한 보증료를 최대 30만원까지 대전시에서 지원해 드리는 사업입니다.',
-    apply_url: 'https://www.daejeonyouthportal.kr/board/BBSMSTR_000000000258/articleList.do?commonMenuNo=451_452_453_454',
+    apply_url: 'https://www.daejeonyouthportal.kr/search/businessSearchResult.do?commonMenuNo=333_339&searchKeywordFrom=&searchKeywordTo=&searchCondition=&searchKeyword=&searchCategory=&pageIndex=0&searchSeq=&dpmBizNm=%EB%B0%98%ED%99%98',
     deadline: '상시 신청 (예산 소진 시까지)',
     host: '대전광역시 / 주택도시보증공사(HUG)', benefit: '전세보증금 반환보증료 최대 30만원 지원',
+  },
+  {
+    id: '14', title: '대전창업온라인 (창업지원 및 보육공간 포털)', category: '창업', region: '대전광역시',
+    age_min: 18, age_max: 39,
+    content: '대전 창업 생태계 활성화를 위해 대전광역시와 대전창조경제혁신센터가 운영하는 통합 창업 포털입니다. 창업 보육 공간, 입주 지원, 투자 및 멘토링 공고를 한곳에서 지원합니다.',
+    apply_url: 'https://d-startup.kr/',
+    deadline: '상시',
+    host: '대전광역시 / 대전창조경제혁신센터', benefit: '창업 보육 공간 입주 및 멘토링 통합 지원',
+  },
+  {
+    id: '15', title: '대전 청년 예술인 창작활동 지원사업', category: '복지', region: '대전광역시',
+    age_min: 19, age_max: 39,
+    content: '대전문화재단에서 지역 청년 예술가들의 창작활동 및 기획 전시/공연 활동비를 지원하는 사업입니다.',
+    apply_url: 'https://www.dcaf.or.kr',
+    deadline: '정기 공모',
+    host: '대전광역시 / 대전문화재단', benefit: '청년 예술가 창작지원금 및 공모 지원',
   },
 ];
 
@@ -167,12 +181,24 @@ export const YOUTH_RESOURCE_SITES = {
       desc: '대전광역시 청년정책 통합 포털. 월세지원, 미래두배청년통장, 취업지원 등 대전 특화 정책 신청 가능',
       scope: '대전',
     },
+    {
+      name: '대전창업온라인',
+      url: 'https://d-startup.kr/',
+      desc: '대전광역시 공식 통합 창업 포털. 창업 보육 공간, 입주 지원, 멘토링 제공',
+      scope: '대전',
+    },
   ],
   job: [
     {
       name: '일경험인턴 (고용24 일경험지원사업)',
       url: 'https://yw.work24.go.kr/main.do',
       desc: '공공·민간기업 청년 일경험 인턴 모집 공고 확인 및 신청',
+      scope: '전국',
+    },
+    {
+      name: 'Q-Net 국가기술자격 (응시료 50% 할인)',
+      url: 'https://www.q-net.or.kr',
+      desc: '한국산업인력공단 청년 국가자격증 응시료 50% 할인 지원 시스템',
       scope: '전국',
     },
     {
@@ -185,12 +211,6 @@ export const YOUTH_RESOURCE_SITES = {
       name: '고용24 (통합 취업 포털)',
       url: 'https://www.work24.go.kr',
       desc: '워크넷+고용보험+내일배움카드+국민취업지원제도 통합. 구직신청, 실업급여, 훈련수강 가능',
-      scope: '전국',
-    },
-    {
-      name: '잡알리오 (공공기관 채용)',
-      url: 'https://job.alio.go.kr',
-      desc: '전국 공기업·준정부기관 채용공고 통합 제공. 공공기관 취업 목표자 필수',
       scope: '전국',
     },
     {
