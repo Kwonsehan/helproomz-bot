@@ -1,7 +1,8 @@
 // ============================================
-// app/api/chat/route.ts — AI 대화 스트리밍 & 무작위 셔플 추천 정책 카드 API
-// - 맞춤 설정 안함 ➔ '💡 추천 정책 TOP 2' (검색된 정책 5~10개 중 매번 다채롭게 무작위 2개 추출)
-// - 맞춤 설정 함 ➔ '💡 맞춤 추천 정책 TOP 2' (맞춤 조건 정책 중 매번 무작위 2개 추출)
+// app/api/chat/route.ts — AI 대화 스트리밍 & 다채로운 무작위 추천 정책 카드 API
+// - 특정 구청 데이터 독점 방지: 대전시 대표 정책, 청년공간, 자치구 정책 15개 셔플
+// - 맞춤 설정 안함 ➔ '💡 추천 정책 TOP 2' (매번 다채로운 2개 노출)
+// - 맞춤 설정 함 ➔ '💡 맞춤 추천 정책 TOP 2' (맞춤 조건 2개 노출)
 // ============================================
 
 import { getOpenAIClient } from '@/lib/openai';
@@ -53,14 +54,14 @@ export async function POST(req: Request) {
     const lastUserMessage = messages[messages.length - 1]?.content || '';
     const isCustomFiltered = isCustomFilterApplied(filter);
 
-    // RAG 정책 검색 (풍부한 셔플을 위해 8개까지 폭넓게 수집)
+    // RAG 정책 검색 (풍부한 셔플을 위해 15개까지 폭넓게 수집)
     const rawPolicies = await searchPolicies(lastUserMessage, {
       category: filter?.category && filter.category !== '전체' ? filter.category : undefined,
       region: filter?.region && filter.region !== '선택하세요.' ? filter.region : undefined,
-      limit: 8,
+      limit: 15,
     });
 
-    // 매 질문마다 똑같은 정책만 고정 반환되는 현상 방지: 무작위 셔플 후 상위 2개 추출
+    // 특정 카드가 고정 노출되는 현상을 완전히 해결하기 위한 강력한 무작위 셔플
     let top2Policies: Policy[] = [];
 
     if (rawPolicies.length > 0) {

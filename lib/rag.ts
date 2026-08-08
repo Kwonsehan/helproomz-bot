@@ -1,17 +1,25 @@
 // ============================================
-// lib/rag.ts — RAG 핵심 로직 & 1:1 세부 공식 신청 URL 100% 매핑
+// lib/rag.ts — RAG 핵심 로직 & 무작위 다채로운 추천 정책 셔플 보장
 // - 온통청년 오픈 API 실시간 연동
-// - 대전 5개 자치구청(서구, 유성구, 중구, 동구, 대덕구) 자동 크롤러 연동
-// - 대전 공식 10개 청년공간 데이터 통합
+// - 대전 5개 자치구청(서구, 유성구, 중구, 동구, 대덕구) 크롤러 연동
+// - 대전 공식 10개 청년공간 & 대전시 핵심 정책 100% 다채로운 셔플 지원
 // ============================================
 import { Policy, getSupabaseAdmin } from './supabase';
 import { fetchYouthCenterPolicies } from './youthcenter';
 import { crawlDaejeonDistrictPolicies } from './districtCrawler';
 import { crawl10YouthSpaces } from './spaceCrawler';
 
-// ============================================
+// 무작위 셔플 함수
+function shuffleArray<T>(array: T[]): T[] {
+  const arr = [...array];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
 // 공식 안전 대표 URL 폴백 매핑
-// ============================================
 function ensureSafeApplyUrl(policy: Policy): string {
   if (policy.apply_url && policy.apply_url.startsWith('http')) {
     return policy.apply_url;
@@ -37,9 +45,7 @@ function ensureSafeApplyUrl(policy: Policy): string {
   return 'https://www.daejeonyouthportal.kr';
 }
 
-// ============================================
 // 100% 검증된 개별 세부 공식 신청 URL 데이터베이스
-// ============================================
 const SAMPLE_POLICIES: Policy[] = [
   {
     id: '1', title: '미래두배 청년통장', category: '금융', region: '대전광역시',
@@ -201,7 +207,7 @@ function localSearch(
   options: { category?: string; region?: string; limit?: number },
   extraPolicies: Policy[] = []
 ): Policy[] {
-  const { category, region, limit = 5 } = options;
+  const { category, region, limit = 15 } = options;
   const q = query.toLowerCase();
 
   const keywords = q.split(/\s+/).filter(k => k.length > 0);
@@ -218,10 +224,10 @@ function localSearch(
       const score = keywords.reduce((sum, kw) => sum + (text.includes(kw) ? 1 : 0), 0);
       return { ...p, similarity: score };
     })
-    .sort((a, b) => (b.similarity ?? 0) - (a.similarity ?? 0))
-    .slice(0, limit);
+    .sort((a, b) => (b.similarity ?? 0) - (a.similarity ?? 0));
 
-  return scored.length > 0 ? scored : allList.slice(0, limit);
+  // 항상 상위 및 무작위성이 고르게 들어가도록 셔플 처리
+  return scored.length > 0 ? shuffleArray(scored).slice(0, limit) : shuffleArray(allList).slice(0, limit);
 }
 
 export async function searchPolicies(
@@ -232,7 +238,7 @@ export async function searchPolicies(
     limit?: number;
   } = {}
 ): Promise<Policy[]> {
-  const { category, region, limit = 5 } = options;
+  const { category, region, limit = 15 } = options;
 
   let apiPolicies: Policy[] = [];
   try {
@@ -279,7 +285,16 @@ export async function searchPolicies(
   const extraList = [...districtPolicies, ...spacePolicies];
   const localResults = localSearch(query, options, extraList);
 
-  const combined = [...apiPolicies, ...extraList, ...dbPolicies, ...localResults];
+  // 대전시 대표 정책(SAMPLE_POLICIES) + localResults + 청년공간 + API 결과를 모두 무작위 셔플
+  const combined = shuffleArray([
+    ...SAMPLE_POLICIES,
+    ...localResults,
+    ...spacePolicies,
+    ...apiPolicies,
+    ...districtPolicies,
+    ...dbPolicies,
+  ]);
+
   const uniqueMap = new Map<string, Policy>();
 
   for (const item of combined) {
