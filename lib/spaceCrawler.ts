@@ -1,6 +1,6 @@
 // ============================================
 // lib/spaceCrawler.ts — 대전 공식 10개 청년공간 전용 수집 모듈
-// 청춘포털 설명 정정 및 10개 공간 개별 URL 100% 강제 연동
+// 대표님이 전달해주신 10개 공간 맞춤 설명 & 위치 특징 100% 수정 반영
 // ============================================
 
 import { Policy } from './supabase';
@@ -18,7 +18,7 @@ export interface YouthSpaceInfo {
   url: string;
 }
 
-// 대전 공식 10개 청년공간 실물 도로명 주소 & 1:1 개별 홈페이지 URL 데이터베이스
+// 대전 공식 10개 청년공간 실물 도로명 주소 & 맞춤 혜택/설명 데이터베이스
 export const DAEJEON_10_YOUTH_SPACES: YouthSpaceInfo[] = [
   // 1. 대전시 운영 (3개)
   {
@@ -29,11 +29,11 @@ export const DAEJEON_10_YOUTH_SPACES: YouthSpaceInfo[] = [
     location: '대전광역시 동구 중앙로 218 지하 3층',
     contact: '042-223-9830',
     hours: '평일 10:00~21:00 / 토요일 10:00~18:00 (일요일·공휴일 휴무)',
-    description: '대전역 지하에 위치하여 구직 청년 스터디, 모임, 1:1 취업 컨설팅을 지원하는 역세권 청년 공간입니다.',
+    description: '대전역근처 I 공간 무료 대여, 스터디, 모임',
     programs: [
-      '청년 취업 스터디룸 및 발표 장비 무상 지원',
-      '전문 상담사 1:1 이력서 및 자기소개서 클리닉',
-      '청년 취미 및 원데이 클래스 강좌 지원'
+      '대전역 근처 청년 스터디룸 및 공간 무료 대여',
+      '청년 취업 모임 및 발표 장비 무상 지원',
+      '전문 상담사 1:1 이력서 및 자기소개서 클리닉'
     ],
     url: 'https://www.daejeonyouthportal.kr/board/BBSMSTR_000000000253/articleList.do?commonMenuNo=451_452_453_455',
   },
@@ -45,11 +45,11 @@ export const DAEJEON_10_YOUTH_SPACES: YouthSpaceInfo[] = [
     location: '대전광역시 서구 둔산중로 19, 2층(샤크존)',
     contact: '042-488-8540',
     hours: '평일 10:00~21:00 / 토요일 10:00~18:00',
-    description: '둔산동 샤크존 2층에 위치하여 청년들의 자율 커뮤니티 활동, 동아리 모임, 소통을 보장하는 청년 거점 공간입니다.',
+    description: '둔산동 I 공간 무료 대여(회의실 등), 스터디, 모임',
     programs: [
-      '청년 커뮤니티 및 소모임 활동비 지원사업',
-      '퍼스널컬러 진단, 이미지메이킹 워크숍',
-      '자율 학습 스터디 공간 및 공유 서가 제공'
+      '둔산동 샤크존 2층 회의실 등 공간 무료 대여',
+      '청년 스터디 및 커뮤니티 소모임 장소 제공',
+      '퍼스널컬러 진단 및 청년 힐링 프로그램'
     ],
     url: 'https://www.daejeonyouthportal.kr/board/BBSMSTR_000000000253/articleList.do?commonMenuNo=451_452_453_455',
   },
@@ -61,11 +61,11 @@ export const DAEJEON_10_YOUTH_SPACES: YouthSpaceInfo[] = [
     location: '대전광역시 서구 갈마중로 30번길 67 1층/지하1층',
     contact: '042-224-1535',
     hours: '평일 10:00~21:00 / 토요일 10:00~18:00',
-    description: '대전 서구 갈마동에 위치하여 청년들의 문화예술, 공연, 버스킹, 유튜브 촬영 스튜디오를 지원하는 다목적 공간입니다.',
+    description: '갈마동 I 공간 무료 대여(행사공간, 공유주방 등), 스터디, 모임',
     programs: [
-      '청년 인디 음악 및 버스킹 공연 무대 제공',
-      '유튜브·콘텐츠 크리에이터 촬영 스튜디오 지원',
-      '청년 소통 기획 프로그램 및 토크콘서트'
+      '갈마동 행사공간, 공유주방 등 공간 무료 대여',
+      '청년 스터디 및 문화예술 모임 장소 지원',
+      '유튜브·콘텐츠 크리에이터 촬영 스튜디오 무료 제공'
     ],
     url: 'https://www.daejeonyouthportal.kr/board/BBSMSTR_000000000253/articleList.do?commonMenuNo=451_452_453_455',
   },
@@ -79,11 +79,11 @@ export const DAEJEON_10_YOUTH_SPACES: YouthSpaceInfo[] = [
     location: '대전광역시 서구 계룡로 314 대전일보사 사옥 1층 (갈마동)',
     contact: '042-523-7736',
     hours: '평일 11:00~21:00 / 토요일 11:00~19:00',
-    description: '대전 서구 청년들을 위한 대표 청년 공간으로, 무료 면접 정장 대여 연계 및 맞춤 취업·창업을 지원합니다.',
+    description: '월평역근처 I 취업/진로 프로그램, 청년정책상담, 공간대여(회의실), 스터디룸, 모임',
     programs: [
-      '구직청년 무료 면접 정장 대여 (구해줘! 정장)',
-      '서구 청년 취업 역량강화 멘토링 & 자격증 응시료 지원',
-      '청년 힐링 공예 클래스 및 취미 소모임'
+      '월평역 근처 취업/진로 프로그램 및 청년 정책 상담',
+      '회의실, 스터디룸 공간 대여 및 청년 모임 지원',
+      '구직청년 무료 면접 정장 대여 (구해줘! 정장 연계)'
     ],
     url: 'https://seoguyouth.kr/',
   },
@@ -95,11 +95,11 @@ export const DAEJEON_10_YOUTH_SPACES: YouthSpaceInfo[] = [
     location: '대전광역시 서구 대덕대로 198 프뢰벨빌딩 7층',
     contact: '042-488-9830',
     hours: '평일 10:00~21:00 / 토요일 10:00~18:00',
-    description: '서구 대덕대로 프뢰벨빌딩 7층에 위치하여 청년 구직자들이 편안하게 공부하고 역량을 키울 수 있도록 마련된 서구 청년 학습 거점 공간입니다.',
+    description: '둔산동 I 공간 무료 대여(회의실), 스터디, 모임',
     programs: [
-      '청년 국가 자격증 및 어학 스터디반 운영',
-      '대기업/공기업 현직자 초청 특강 및 멘토링',
-      '개인 몰입형 공부 및 노트북 스터디 좌석'
+      '둔산동 프뢰벨빌딩 회의실 공간 무료 대여',
+      '청년 몰입형 스터디 및 커뮤니티 모임 좌석 지원',
+      '대기업/공기업 현직자 초청 특강 및 멘토링'
     ],
     url: 'https://seoguyouth.kr/',
   },
@@ -111,11 +111,11 @@ export const DAEJEON_10_YOUTH_SPACES: YouthSpaceInfo[] = [
     location: '대전광역시 서구 사마7길 33 도솔마을어울림플랫폼 2층',
     contact: '042-288-3920',
     hours: '평일 10:00~20:00 / 토요일 10:00~17:00',
-    description: '서구 도솔마을어울림플랫폼 2층에 위치하여 청년들의 취업 정보 공유와 자유로운 소통 커뮤니티 모임을 지원하는 서구 청년 거점 공간입니다.',
+    description: '도마동 I 공간 무료 대여(회의실,미디어실), 스터디, 모임',
     programs: [
-      '청년 자유 커뮤니티 및 소모임 장소 지원',
-      '서구 청년 정책 통합 모니터링단',
-      '청년 문화 소통 세미나실 무료 대여'
+      '도마동 회의실, 미디어실 공간 무료 대여',
+      '청년 스터디 및 자유 커뮤니티 모임 지원',
+      '서구 청년 정책 통합 모니터링단 운영'
     ],
     url: 'https://seoguyouth.kr/',
   },
@@ -129,11 +129,11 @@ export const DAEJEON_10_YOUTH_SPACES: YouthSpaceInfo[] = [
     location: '대전광역시 동구 백룡로 20 동구 새마을회관 3층',
     contact: '042-680-4880',
     hours: '평일 10:00~20:00 / 토요일 10:00~17:00',
-    description: '동구 백룡로 동구 새마을회관 3층에 위치하여 청년들이 함께 모여 즐기고(樂) 성장하는 동구 전용 청년 복합 문화 공간입니다.',
+    description: '우송대근처 I 스터디, 모임, 휴식공간',
     programs: [
-      '동구 청년 자격증 시험 응시료 지원 상담',
-      'AI 모의면접 체험관 및 VR 면접 피드백',
-      '청년 커뮤니티 지원사업 및 동구 청년 교류의 날'
+      '우송대 근처 청년 스터디 및 모임 공간 제공',
+      '편안하게 쉬어갈 수 있는 청년 휴식 공간 지원',
+      '동구 청년 자격증 시험 응시료 지원 상담 및 AI 모의면접'
     ],
     url: 'https://www.dongguyouth.or.kr/',
   },
@@ -147,11 +147,11 @@ export const DAEJEON_10_YOUTH_SPACES: YouthSpaceInfo[] = [
     location: '대전광역시 중구 목중로 70번길 15 2층',
     contact: '042-224-1530',
     hours: '평일 10:00~20:00 / 토요일 10:00~17:00',
-    description: '중구 목중로에 위치하여 청년들이 모여 꿈을 나누고 소상공인 지원 및 자립 기반을 다지는 공간입니다.',
+    description: '선화동 I 공간 무료 대여(강의장,공유주방,공유오피스), 모임, 강의',
     programs: [
-      '중구 청년 소상공인 사업장 임차료 지원 상담',
-      '청년 가죽·목공 예술 체험 클래스',
-      '청년 1인가구 건강 식습관 및 밀키트 교실'
+      '선화동/목동 강의장, 공유주방, 공유오피스 공간 무료 대여',
+      '청년 커뮤니티 모임 및 역량강화 강의 진행',
+      '중구 청년 소상공인 사업장 임차료 지원 상담'
     ],
     url: 'http://www.xn--660b31p2yizuh.com/',
   },
@@ -165,10 +165,10 @@ export const DAEJEON_10_YOUTH_SPACES: YouthSpaceInfo[] = [
     location: '대전광역시 대덕구 대전로 1033번길 20 대덕구청 지하 1층',
     contact: '042-608-6485',
     hours: '평일 10:00~21:00 / 토요일 10:00~18:00',
-    description: '대덕구청 지하 벙커에 위치한 문화·예술·스포츠 청년 전용 복합 커뮤니티 공간입니다.',
+    description: '대덕구청지하 I 공간 무료 대여(라운지, 회의실, 연습실, 공유주방, 스튜디오)',
     programs: [
-      '대덕 청년밴드 음악 연습실 및 댄스 스튜디오 운영',
-      '청년 체육 요가·필라테스 무료 강좌',
+      '대덕구청 지하 라운지, 회의실, 연습실, 공유주방, 스튜디오 무료 대여',
+      '청년 밴드 음악 연습실 및 댄스/요가 무료 강좌',
       '대덕 청년 팝업 마켓 및 청년의 날 축제'
     ],
     url: 'https://www.ddyouth.net/',
@@ -183,18 +183,21 @@ export const DAEJEON_10_YOUTH_SPACES: YouthSpaceInfo[] = [
     location: '대전광역시 유성구 농대로15번길 20',
     contact: '042-867-8830',
     hours: '평일 09:00~20:00 / 토요일 10:00~17:00',
-    description: '유성구 농대로에 위치하여 청년들의 일자리, 주거, 동아리 활동을 총괄 지원하는 유성구 공식 청년 거점 센터입니다.',
+    description: '궁동 I 공간 무료 대여(회의실,세미나실), 스터디, 모임',
     programs: [
-      '유성 청년 마을 활동가 및 동아리 지원사업',
-      '궁동 스타트업 타운 창업 멘토링 & 공유 오피스',
-      '대학생 맞춤 취업 역량 캠프'
+      '궁동 회의실, 세미나실 공간 무료 대여',
+      '청년 스터디 및 대학생 동아리 모임 공간 지원',
+      '궁동 스타트업 타운 창업 멘토링 & 공유 오피스'
     ],
     url: 'https://www.yuseong.go.kr/ysyouth/index.do',
   },
 ];
 
+/**
+ * 대전 10개 청년공간 실물 도로명 주소 & 맞춤 혜택 문구를 Policy 타입으로 변환
+ */
 export async function crawl10YouthSpaces(): Promise<Policy[]> {
-  console.log('[청년공간 수집] 대전 10개 청년공간 1:1 개별 공식 홈페이지 매핑 로드...');
+  console.log('[청년공간 수집] 대전 10개 청년공간 대표 제공 맞춤 설명 100% 반영 로드...');
 
   return DAEJEON_10_YOUTH_SPACES.map(space => {
     const programListText = space.programs.map((p, i) => `${i + 1}. ${p}`).join('\n');
@@ -206,11 +209,11 @@ export async function crawl10YouthSpaces(): Promise<Policy[]> {
       region: space.district,
       age_min: 18,
       age_max: 39,
-      content: `🏛️ **운영 주체:** ${space.hostType}\n${space.description}\n\n📍 **정확한 도로명 주소:** ${space.location}\n⏰ **운영시간:** ${space.hours}\n📞 **문의전화:** ${space.contact}\n🌐 **공식 누리집:** [${space.name} 공식 홈페이지 바로가기](${space.url})\n\n【대표 운영 프로그램】\n${programListText}`,
+      content: `🏛️ **운영 주체:** ${space.hostType}\n📍 **위치 특징 및 주요 혜택:** ${space.description}\n\n📍 **정확한 도로명 주소:** ${space.location}\n⏰ **운영시간:** ${space.hours}\n📞 **문의전화:** ${space.contact}\n🌐 **공식 누리집:** [${space.name} 공식 홈페이지 바로가기](${space.url})\n\n【대표 운영 프로그램】\n${programListText}`,
       apply_url: space.url,
       deadline: '상시 운영',
       host: space.name,
-      benefit: '공간 및 스터디룸 무료 이용, 취업/창업/문화 강좌 무료 참여',
+      benefit: space.description,
     };
   });
 }
