@@ -2,7 +2,7 @@
 // ============================================
 // components/ChatWindow.tsx
 // 메인 채팅창 컴포넌트
-// - 분야별 4개 탭 모바일 한눈에 다 보이는 콤팩트 라벨 및 1라인 배치 지원
+// - 하단 Shift+Enter 문구 삭제 및 깔끔한 힌트 적용
 // ============================================
 
 import { useState, useRef, useEffect, useCallback } from 'react';
@@ -286,7 +286,7 @@ export default function ChatWindow() {
         <div ref={bottomRef} />
       </main>
 
-      {/* ========== 모바일 1라인 컴팩트 4개 분야 탭 추천 질문 영역 ========== */}
+      {/* ========== 분야별 2단계 추천 질문 탭 ========== */}
       <div className="suggestions">
         <div className="suggestions-header">
           <button
@@ -350,7 +350,7 @@ export default function ChatWindow() {
             value={input}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
-            placeholder="청년정책에 대해 무엇이든 물어보세요... (Enter로 전송)"
+            placeholder="청년정책에 대해 무엇이든 물어보세요..."
             className="input-textarea"
             rows={1}
             disabled={isLoading}
@@ -371,7 +371,7 @@ export default function ChatWindow() {
             )}
           </button>
         </div>
-        <p className="input-hint">Shift+Enter로 줄바꿈 | AI 답변은 참고용이며, 정확한 정보는 해당 기관에 확인하세요</p>
+        <p className="input-hint">AI 답변은 참고용이며, 정확한 정보는 해당 기관에 확인하세요</p>
       </footer>
     </div>
   );

@@ -893,7 +893,7 @@ html, body {
 }
 
 /* ============================================
-   입력창 영역
+   입력창 영역 (모바일 입력 폰트 및 placeholder 슬림화)
    ============================================ */
 .input-area {
   padding: 14px 24px;
@@ -907,7 +907,7 @@ html, body {
 
 @media (max-width: 640px) {
   .input-area {
-    padding: 10px 14px;
+    padding: 8px 12px;
   }
 }
 
@@ -921,6 +921,12 @@ html, body {
   border: 1px solid var(--border);
 }
 
+@media (max-width: 640px) {
+  .input-wrapper {
+    padding: 6px 12px;
+  }
+}
+
 .input-textarea {
   flex: 1;
   background: transparent;
@@ -931,6 +937,20 @@ html, body {
   color: var(--text-primary);
   font-family: inherit;
   line-height: 1.5;
+}
+
+.input-textarea::placeholder {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+@media (max-width: 640px) {
+  .input-textarea {
+    font-size: 13px;
+  }
+  .input-textarea::placeholder {
+    font-size: 12.5px;
+  }
 }
 
 .send-btn {
@@ -950,6 +970,14 @@ html, body {
   flex-shrink: 0;
 }
 
+@media (max-width: 640px) {
+  .send-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
+  }
+}
+
 .send-btn:disabled {
   background: #CBD5E1;
   color: #ffffff;
@@ -960,4 +988,10 @@ html, body {
   font-size: 11.5px;
   color: var(--text-muted);
   text-align: center;
+}
+
+@media (max-width: 640px) {
+  .input-hint {
+    font-size: 10.5px;
+  }
 }
