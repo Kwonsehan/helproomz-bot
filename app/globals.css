@@ -716,7 +716,7 @@ html, body {
 }
 
 /* ============================================
-   분야별 2단계 추천 질문 탭
+   분야별 2단계 추천 질문 탭 (모바일 1라인 콤팩트)
    ============================================ */
 .suggestions {
   padding: 12px 24px;
@@ -724,14 +724,8 @@ html, body {
   border-top: 1px solid var(--border);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   flex-shrink: 0;
-}
-
-@media (max-width: 640px) {
-  .suggestions {
-    padding: 10px 14px;
-  }
 }
 
 .suggestions-header {
@@ -745,7 +739,7 @@ html, body {
   border: none;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   cursor: pointer;
 }
 
@@ -755,18 +749,12 @@ html, body {
   color: var(--chungchun-blue);
 }
 
-@media (max-width: 640px) {
-  .suggestions-label {
-    font-size: 12.5px;
-  }
-}
-
 .toggle-icon {
-  font-size: 12px;
+  font-size: 11.5px;
   color: var(--text-secondary);
   font-weight: 600;
   background: #EAF0F8;
-  padding: 2px 8px;
+  padding: 2px 7px;
   border-radius: var(--radius-pill);
 }
 
@@ -774,8 +762,8 @@ html, body {
   background: #ffffff;
   border: 1px solid var(--border);
   border-radius: var(--radius-pill);
-  padding: 4px 12px;
-  font-size: 12px;
+  padding: 4px 10px;
+  font-size: 11.5px;
   color: var(--chungchun-blue);
   font-weight: 700;
   cursor: pointer;
@@ -790,21 +778,22 @@ html, body {
 .suggestions-content {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .category-tab-bar {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  padding-bottom: 2px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  width: 100%;
 }
 
 .category-tab-btn {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 14px;
+  justify-content: center;
+  gap: 4px;
+  padding: 6px 8px;
   border-radius: var(--radius-pill);
   background: #ffffff;
   border: 1px solid var(--border);
@@ -814,11 +803,16 @@ html, body {
   cursor: pointer;
   white-space: nowrap;
   transition: all 0.2s ease;
+  width: 100%;
 }
 
 .category-tab-btn:hover {
   border-color: var(--chungchun-blue);
   color: var(--chungchun-blue);
+}
+
+.tab-label-short {
+  display: none;
 }
 
 .active-cat-tab {
@@ -832,22 +826,15 @@ html, body {
 .suggestions-grid-3 {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-}
-
-@media (max-width: 640px) {
-  .suggestions-grid-3 {
-    grid-template-columns: 1fr;
-    gap: 6px;
-  }
+  gap: 8px;
 }
 
 .suggestion-chip {
-  padding: 9px 14px;
+  padding: 8px 12px;
   background: #ffffff;
   border: 1px solid var(--border);
   border-radius: var(--radius-pill);
-  font-size: 13px;
+  font-size: 12.5px;
   color: var(--text-primary);
   text-align: center;
   cursor: pointer;
@@ -858,18 +845,51 @@ html, body {
   box-shadow: 0 1px 3px rgba(0,0,0,0.03);
 }
 
-@media (max-width: 640px) {
-  .suggestion-chip {
-    padding: 7px 12px;
-    font-size: 12px;
-  }
-}
-
 .suggestion-chip:hover {
   border-color: var(--chungchun-blue);
   background: #F0F4FA;
   color: var(--chungchun-blue);
   font-weight: 700;
+}
+
+/* 모바일 전용 슬림 1라인 컴팩트 스타일 */
+@media (max-width: 640px) {
+  .suggestions {
+    padding: 8px 12px;
+    gap: 6px;
+  }
+  .suggestions-label {
+    font-size: 12px;
+  }
+  .refresh-btn {
+    padding: 3px 8px;
+    font-size: 11px;
+  }
+  .category-tab-bar {
+    gap: 4px;
+  }
+  .category-tab-btn {
+    padding: 5px 4px;
+    font-size: 11px;
+    border-radius: 14px;
+  }
+  .tab-icon {
+    font-size: 11px;
+  }
+  .tab-label-full {
+    display: none;
+  }
+  .tab-label-short {
+    display: inline;
+  }
+  .suggestions-grid-3 {
+    grid-template-columns: 1fr;
+    gap: 5px;
+  }
+  .suggestion-chip {
+    padding: 6px 10px;
+    font-size: 11.5px;
+  }
 }
 
 /* ============================================

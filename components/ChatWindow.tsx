@@ -2,8 +2,7 @@
 // ============================================
 // components/ChatWindow.tsx
 // 메인 채팅창 컴포넌트
-// - 맞춤 설정 안함 ➔ '💡 추천 정책 TOP 2' (질문 분야 연관 무작위)
-// - 맞춤 설정 함 ➔ '💡 맞춤 추천 정책 TOP 2' (맞춤 조건 반영)
+// - 분야별 4개 탭 모바일 한눈에 다 보이는 콤팩트 라벨 및 1라인 배치 지원
 // ============================================
 
 import { useState, useRef, useEffect, useCallback } from 'react';
@@ -17,14 +16,15 @@ export type CategoryTab = '일자리' | '주거금융' | '창업복지' | '청�
 export interface CategoryTabInfo {
   id: CategoryTab;
   label: string;
+  shortLabel: string;
   icon: string;
 }
 
 export const CATEGORY_TABS: CategoryTabInfo[] = [
-  { id: '일자리', label: '일자리·취업', icon: '💼' },
-  { id: '주거금융', label: '주거·금융', icon: '🏠' },
-  { id: '창업복지', label: '창업·복지', icon: '🚀' },
-  { id: '청년공간', label: '대전 청년공간', icon: '🏛️' },
+  { id: '일자리', label: '일자리·취업', shortLabel: '일자리·취업', icon: '💼' },
+  { id: '주거금융', label: '주거·금융', shortLabel: '주거·금융', icon: '🏠' },
+  { id: '창업복지', label: '창업·복지', shortLabel: '창업·복지', icon: '🚀' },
+  { id: '청년공간', label: '대전 청년공간', shortLabel: '청년공간', icon: '🏛️' },
 ];
 
 export const CATEGORY_QUESTION_POOLS: Record<CategoryTab, string[]> = {
@@ -286,7 +286,7 @@ export default function ChatWindow() {
         <div ref={bottomRef} />
       </main>
 
-      {/* ========== 분야별 2단계 추천 질문 탭 ========== */}
+      {/* ========== 모바일 1라인 컴팩트 4개 분야 탭 추천 질문 영역 ========== */}
       <div className="suggestions">
         <div className="suggestions-header">
           <button
@@ -320,8 +320,9 @@ export default function ChatWindow() {
                   onClick={() => setActiveCategoryTab(tab.id)}
                   className={`category-tab-btn ${activeCategoryTab === tab.id ? 'active-cat-tab' : ''}`}
                 >
-                  <span>{tab.icon}</span>
-                  <span>{tab.label}</span>
+                  <span className="tab-icon">{tab.icon}</span>
+                  <span className="tab-label-full">{tab.label}</span>
+                  <span className="tab-label-short">{tab.shortLabel}</span>
                 </button>
               ))}
             </div>
