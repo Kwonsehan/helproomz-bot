@@ -2,7 +2,7 @@
 // ============================================
 // components/ChatWindow.tsx
 // 메인 채팅창 컴포넌트
-// - 하단 Shift+Enter 문구 삭제 및 깔끔한 힌트 적용
+// - 하단 placeholder 문구 '물어보세요 :)'로 변경
 // ============================================
 
 import { useState, useRef, useEffect, useCallback } from 'react';
@@ -350,7 +350,7 @@ export default function ChatWindow() {
             value={input}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
-            placeholder="청년정책에 대해 무엇이든 물어보세요..."
+            placeholder="청년정책에 대해 무엇이든 물어보세요 :)"
             className="input-textarea"
             rows={1}
             disabled={isLoading}
