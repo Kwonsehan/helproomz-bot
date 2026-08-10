@@ -254,6 +254,14 @@ export default function ChatWindow() {
             <h1 className="header-main-text">
               <span>도와줘룸즈 AI챗봇 '루미'</span>
             </h1>
+            <a
+              href="https://helproomz.imweb.me/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="apply-cta-btn"
+            >
+              🏠 도와줘룸즈 신청하기
+            </a>
           </div>
         </div>
         <button
