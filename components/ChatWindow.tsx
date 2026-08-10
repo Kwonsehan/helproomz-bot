@@ -2,7 +2,7 @@
 // ============================================
 // components/ChatWindow.tsx
 // 도와줘룸즈 AI챗봇 '루미' 주거특화 메인 채팅창 컴포넌트
-// - 주거·금융 탭 맨 앞(첫번째) 우선 배치!
+// - 질문 클릭/전송 시 추천 질문 탭 자동 접힘 기능 적용!
 // ============================================
 
 import { useState, useRef, useEffect, useCallback } from 'react';
@@ -20,7 +20,6 @@ export interface CategoryTabInfo {
   icon: string;
 }
 
-// 주거·금융 탭을 맨 앞(첫 번째)으로 최우선 배치!
 export const CATEGORY_TABS: CategoryTabInfo[] = [
   { id: '주거금융', label: '주거·금융', shortLabel: '주거·금융', icon: '🏠' },
   { id: '일자리', label: '일자리·취업', shortLabel: '일자리·취업', icon: '💼' },
@@ -98,7 +97,6 @@ export default function ChatWindow() {
   const [isLoading, setIsLoading] = useState(false);
   const [filter, setFilter] = useState<UserSituationFilter>(initialFilter);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  // 첫 번째 선택 탭을 '주거금융'으로 지정!
   const [activeCategoryTab, setActiveCategoryTab] = useState<CategoryTab>('주거금융');
   const [suggestedQuestions, setSuggestedQuestions] = useState<string[]>([]);
   const [isSuggestionsOpen, setIsSuggestionsOpen] = useState(true);
@@ -121,6 +119,9 @@ export default function ChatWindow() {
 
   const sendMessage = useCallback(async (text: string) => {
     if (!text.trim() || isLoading) return;
+
+    // 질문 전송 시 추천 질문 탭 자동 접힘!
+    setIsSuggestionsOpen(false);
 
     const userMessage: Message = {
       id: uuidv4(),
@@ -283,7 +284,7 @@ export default function ChatWindow() {
         <div ref={bottomRef} />
       </main>
 
-      {/* ========== 분야별 2단계 추천 질문 탭 (주거 탭 우선) ========== */}
+      {/* ========== 분야별 2단계 추천 질문 탭 (질문 클릭 시 자동 접힘) ========== */}
       <div className="suggestions">
         <div className="suggestions-header">
           <button
