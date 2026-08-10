@@ -71,7 +71,7 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
     <div className={`message-wrapper ${isUser ? 'message-user' : 'message-assistant'}`}>
       {/* 아바타 아이콘 */}
       <div className={`avatar ${isUser ? 'avatar-user' : 'avatar-assistant'}`}>
-        {isUser ? '👤' : '🤖'}
+        {isUser ? '👤' : <img src="/logo.png" alt="루미 캐릭터 로고" className="avatar-logo-img" />}
       </div>
 
       <div className="message-content-area">
