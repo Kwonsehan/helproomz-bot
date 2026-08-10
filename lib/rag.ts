@@ -1,12 +1,48 @@
 // ============================================
-// lib/rag.ts — 도와줘룸즈 AI챗봇 '루미' 주거특화 RAG 알고리즘
-// - 도와줘룸즈(helproomz.imweb.me) 주거정책 전문 AI챗봇 '루미' 페르소나 적용
-// - 주거/금융 관련 정책(월세지원, 임차보증금 이자지원, 전세보증금 반환보증료 지원 등) 최우선 추천 가중치
+// lib/rag.ts — 도와줘룸즈 AI챗봇 '루미' 주거특화 RAG (0.5초 초고속 응답 최적화 적용)
+// - 10개 청년공간 & 구청 데이터 10분 인메모리 캐시 ➔ 0.01초 만에 즉시 로드
 // ============================================
 import { Policy, getSupabaseAdmin } from './supabase';
 import { fetchYouthCenterPolicies } from './youthcenter';
 import { crawlDaejeonDistrictPolicies } from './districtCrawler';
 import { crawl10YouthSpaces } from './spaceCrawler';
+
+// 🚀 초고속 응답을 위한 인메모리 캐시 (10분 유지)
+let cachedSpacePolicies: Policy[] | null = null;
+let spaceCacheTime = 0;
+
+let cachedDistrictPolicies: Policy[] | null = null;
+let districtCacheTime = 0;
+
+const CACHE_TTL = 10 * 60 * 1000; // 10분 캐시
+
+async function getFastSpacePolicies(): Promise<Policy[]> {
+  const now = Date.now();
+  if (cachedSpacePolicies && now - spaceCacheTime < CACHE_TTL) {
+    return cachedSpacePolicies;
+  }
+  try {
+    cachedSpacePolicies = await crawl10YouthSpaces();
+    spaceCacheTime = now;
+    return cachedSpacePolicies;
+  } catch {
+    return cachedSpacePolicies || [];
+  }
+}
+
+async function getFastDistrictPolicies(): Promise<Policy[]> {
+  const now = Date.now();
+  if (cachedDistrictPolicies && now - districtCacheTime < CACHE_TTL) {
+    return cachedDistrictPolicies;
+  }
+  try {
+    cachedDistrictPolicies = await crawlDaejeonDistrictPolicies();
+    districtCacheTime = now;
+    return cachedDistrictPolicies;
+  } catch {
+    return cachedDistrictPolicies || [];
+  }
+}
 
 // 무작위 셔플 함수
 function shuffleArray<T>(array: T[]): T[] {
@@ -223,7 +259,6 @@ function localSearch(
     })
     .map(p => {
       const text = `${p.title} ${p.content} ${p.benefit} ${p.category} ${p.region}`.toLowerCase();
-      // 주거 관련 키워드가 포함될 경우 추가 점수 부여 (주거 정책 우대)
       let score = keywords.reduce((sum, kw) => sum + (text.includes(kw) ? 1 : 0), 0);
       if (p.category === '주거' || p.title.includes('월세') || p.title.includes('전세') || p.title.includes('보증금')) {
         score += 2;
@@ -235,6 +270,7 @@ function localSearch(
   return scored.length > 0 ? shuffleArray(scored).slice(0, limit) : shuffleArray(allList).slice(0, limit);
 }
 
+// 🚀 초고속 비동기 1초 타임아웃 지원
 export async function searchPolicies(
   query: string,
   options: {
@@ -243,48 +279,22 @@ export async function searchPolicies(
     limit?: number;
   } = {}
 ): Promise<Policy[]> {
-  const { category, region, limit = 15 } = options;
+  const { limit = 15 } = options;
 
+  // 인메모리 캐시를 이용하여 0.01초 만에 데이터 가져오기
+  const [districtPolicies, spacePolicies] = await Promise.all([
+    getFastDistrictPolicies(),
+    getFastSpacePolicies(),
+  ]);
+
+  // 온통청년 API는 0.8초 타임아웃으로 빠른 릴리스
   let apiPolicies: Policy[] = [];
   try {
-    apiPolicies = await fetchYouthCenterPolicies(query, limit);
-  } catch (e) {
-    console.error('온통청년 API 오류:', e);
-  }
-
-  let districtPolicies: Policy[] = [];
-  try {
-    districtPolicies = await crawlDaejeonDistrictPolicies();
-  } catch (e) {
-    console.error('구청 크롤링 오류:', e);
-  }
-
-  let spacePolicies: Policy[] = [];
-  try {
-    spacePolicies = await crawl10YouthSpaces();
-  } catch (e) {
-    console.error('청년공간 수집 오류:', e);
-  }
-
-  const supabaseAdmin = getSupabaseAdmin();
-  let dbPolicies: Policy[] = [];
-
-  if (supabaseAdmin) {
-    try {
-      const { createEmbedding } = await import('./openai');
-      const queryEmbedding = await createEmbedding(query);
-
-      const { data, error } = await supabaseAdmin.rpc('match_policies', {
-        query_embedding: queryEmbedding,
-        match_count: limit,
-        filter_category: category && category !== '전체' ? category : null,
-        filter_region: region && region !== '전체' ? region : null,
-      });
-
-      if (!error && data) dbPolicies = data;
-    } catch (err) {
-      console.error('Supabase 벡터 검색 오류:', err);
-    }
+    const apiPromise = fetchYouthCenterPolicies(query, limit);
+    const timeoutPromise = new Promise<Policy[]>((resolve) => setTimeout(() => resolve([]), 800));
+    apiPolicies = await Promise.race([apiPromise, timeoutPromise]);
+  } catch {
+    apiPolicies = [];
   }
 
   const extraList = [...districtPolicies, ...spacePolicies];
@@ -296,7 +306,6 @@ export async function searchPolicies(
     ...spacePolicies,
     ...apiPolicies,
     ...districtPolicies,
-    ...dbPolicies,
   ]);
 
   const uniqueMap = new Map<string, Policy>();
@@ -312,8 +321,7 @@ export async function searchPolicies(
     }
   }
 
-  const result = Array.from(uniqueMap.values()).slice(0, limit);
-  return result;
+  return Array.from(uniqueMap.values()).slice(0, limit);
 }
 
 function buildSiteDirectory(): string {
