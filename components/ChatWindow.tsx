@@ -254,36 +254,20 @@ export default function ChatWindow() {
             <h1 className="header-main-text">
               <span>도와줘룸즈 AI챗봇 '루미'</span>
             </h1>
-            <a
-              href="https://helproomz.imweb.me/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="apply-cta-btn"
-            >
-              <span className="apply-btn-full">🏠 도와줘룸즈 신청하기</span>
-              <span className="apply-btn-short">🏠 방구하기 신청</span>
-            </a>
           </div>
         </div>
-        <button
-          className={`filter-toggle ${isFilterOpen ? 'filter-toggle-active' : ''}`}
-          onClick={() => setIsFilterOpen(!isFilterOpen)}
+        {/* 신청하기 버튼을 오른쪽 끝으로 이동 */}
+        <a
+          href="https://helproomz.imweb.me/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="apply-cta-btn"
         >
-          <span className="btn-full-text">📋 내 맞춤 상황 체크 {isFilterOpen ? '닫기' : '설정'}</span>
-          <span className="btn-short-text">📋 맞춤 {isFilterOpen ? '닫기' : '설정'}</span>
-        </button>
+          <span className="apply-btn-full">🏠 도와줘룸즈 신청하기</span>
+          <span className="apply-btn-short">🏠 방구하기 신청</span>
+        </a>
       </header>
 
-      {/* ========== 맞춤 상황 체크 필터 패널 ========== */}
-      {isFilterOpen && (
-        <div className="filter-panel">
-          <PolicyFilter
-            filter={filter}
-            onChangeFilter={setFilter}
-            onResetFilter={() => setFilter(initialFilter)}
-          />
-        </div>
-      )}
 
       {/* ========== 메시지 대화 영역 ========== */}
       <main className="messages-area">
